@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
+
 namespace VocalAssistant
 {
     /// <summary>
@@ -22,6 +23,9 @@ namespace VocalAssistant
     /// </summary>
     sealed partial class App : Application
     {
+        private static MainPage this_main_page;
+
+
         /// <summary>
         /// Inizializza l'oggetto Application singleton. Si tratta della prima riga del codice creato
         /// creato e, come tale, corrisponde all'equivalente logico di main() o WinMain().
@@ -30,6 +34,11 @@ namespace VocalAssistant
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+        }
+
+        public static void SayHello()
+        {
+            this_main_page.Output("Hello world.");
         }
 
         /// <summary>
@@ -70,6 +79,9 @@ namespace VocalAssistant
                 }
                 // Assicurarsi che la finestra corrente sia attiva
                 Window.Current.Activate();
+
+                //Get current page
+                this_main_page = (MainPage)rootFrame.Content;
             }
         }
 

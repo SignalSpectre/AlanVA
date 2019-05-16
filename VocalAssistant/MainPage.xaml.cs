@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using AssistantSpeechSynthesis;
 
 // Il modello di elemento Pagina vuota è documentato all'indirizzo https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x410
 
@@ -22,9 +23,23 @@ namespace VocalAssistant
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        private SpeechService speechSyntesizer;
+
         public MainPage()
         {
             this.InitializeComponent();
+            speechSyntesizer = new SpeechService("Male", "en-US");
+        }
+
+        private void btn_Click(object sender, RoutedEventArgs e)
+        {
+            App.SayHello();
+        }
+
+        public void Output(string textToOutput)
+        {
+            testTxt.Text = textToOutput;
+            speechSyntesizer.SayAsync(textToOutput);
         }
     }
 }
