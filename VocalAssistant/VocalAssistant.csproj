@@ -107,6 +107,9 @@
     <None Include="VocalAssistant_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="remainder_rules.xml" />
+    <Content Include="Music\queen.wma" />
+    <Content Include="Music\shoot.wma" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />

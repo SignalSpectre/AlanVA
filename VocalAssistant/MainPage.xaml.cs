@@ -23,23 +23,15 @@ namespace VocalAssistant
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private SpeechService speechSyntesizer;
 
         public MainPage()
         {
             this.InitializeComponent();
-            speechSyntesizer = new SpeechService("Male", "en-US");
-        }
-
-        private void btn_Click(object sender, RoutedEventArgs e)
-        {
-            App.SayHello();
         }
 
         public void Output(string textToOutput)
         {
-            testTxt.Text = textToOutput;
-            speechSyntesizer.SayAsync(textToOutput);
+            output.Text = textToOutput;
         }
     }
 }
