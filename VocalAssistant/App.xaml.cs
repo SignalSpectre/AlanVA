@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.Media.SpeechRecognition;
 using Windows.Storage;
@@ -22,6 +14,8 @@ using System.Net;
 using System.Threading.Tasks;
 using AssistantSpeechSynthesis;
 using System.Text;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace VocalAssistant
 {
@@ -89,19 +83,11 @@ namespace VocalAssistant
             SpeechRecognitionCompilationResult backup_compilation_result = await background_recognizer.CompileConstraintsAsync();
             SpeechRecognitionCompilationResult task_compilation_result = await task_recognizer.CompileConstraintsAsync();
 
-            //DEBUG
-            Debug.WriteLine("Background_recognizer language is: " + background_recognizer.CurrentLanguage.NativeName.ToString());
-
-            while (this_main_page == null) ;
-
-            //this_main_page.Output("Ciao.");
-
             // If compilation successful, start continuous recognition session
             if (backup_compilation_result.Status == SpeechRecognitionResultStatus.Success)
                 await background_recognizer.ContinuousRecognitionSession.StartAsync();
 
-            if (task_compilation_result.Status == SpeechRecognitionResultStatus.Success)
-                Debug.WriteLine("Compilation result: Success.");
+            await GUIOutput("Hi, I'm Lawrence. How can I help you?", true);
 
             // Set event handlers
             background_recognizer.ContinuousRecognitionSession.ResultGenerated += ContinuousRecognitionSession_ResultGenerated;
@@ -109,19 +95,48 @@ namespace VocalAssistant
             player.MediaEnded += player_MediaEnded;
         }
 
+        //Print function
+        private async Task GUIOutput(string text, bool has_to_speak)
+        {
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            this_main_page.Output(text);
+                                        });
+
+            if(has_to_speak)
+                await speaker.SayAsync(text);
+        }
+
         private void background_recognizer_StateChanged(SpeechRecognizer sender, SpeechRecognizerStateChangedEventArgs args)
         {
-            Debug.WriteLine("State changed - " + args.State.ToString());
             if (args.State.ToString() == "Idle" && (state == AssistantState.BACKGROUND_LISTEN || state == AssistantState.BACKGROUND_PLAYING_SONG))
                 background_recognizer.ContinuousRecognitionSession.StartAsync();
+
+            //Change logo image
+            if(state == AssistantState.BACKGROUND_LISTEN || state == AssistantState.BACKGROUND_PLAYING_SONG)
+            {
+                //Set image to static
+                Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            this_main_page.StaticLogo();
+                                        });
+            }
+            else
+            {
+                //Set image to animated
+                Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            this_main_page.AnimatedLogo();
+                                        });
+            }
         }
 
         private void ContinuousRecognitionSession_ResultGenerated(SpeechContinuousRecognitionSession sender, SpeechContinuousRecognitionResultGeneratedEventArgs args)
         {
             // Execute tasks acoording to recognized speech
-
-            Debug.WriteLine("Result recognized: " + args.Result.Text);
-
             if (args.Result.Text == "hey lawrence")
                 VocalAssistantFunctionality();
 
@@ -142,23 +157,25 @@ namespace VocalAssistant
             // Stop continuous recognition session
             await background_recognizer.ContinuousRecognitionSession.StopAsync();
 
-            await speaker.SayAsync("I'm listening.");
-            //this_main_page.Output("I'm listening.");
+            await GUIOutput("I'm listening.", true);
 
             //listen for user command
             SpeechRecognitionResult command = await task_recognizer.RecognizeAsync();
 
-            //DEBUG
-            Debug.WriteLine("DEBUG: you said:" + command.Text);
-
             //select task list by state
             if (state == AssistantState.LISTENING)
                 await NormalTaskList(command.Text);
-            else if (state == AssistantState.LISTENING_PLAYING_SONG) 
+            else if (state == AssistantState.LISTENING_PLAYING_SONG)
             {
                 await SongTaskList(command.Text);
                 player.Volume = player_volume;
             }
+
+            //Reset GUI script
+            if(state == AssistantState.BACKGROUND_PLAYING_SONG)
+                await GUIOutput("Playing music.", false);
+            else
+                await GUIOutput("How can I help you?", false);
 
             //Restart continuos recognition session
             await background_recognizer.ContinuousRecognitionSession.StartAsync();
@@ -172,12 +189,12 @@ namespace VocalAssistant
             if (command == "what time is it")
             {
                 var now = System.DateTime.Now;
-                await speaker.SayAsync($"It's {now.Hour} {now.Minute}.");
+                await GUIOutput($"It's {now.Hour}:{now.Minute}.", true);
 
                 state = AssistantState.BACKGROUND_LISTEN;
             }
             else if (command == "tell me a joke")
-                TellJokes();
+                await TellJokes();
             else if (command == "play some music")
                 await PlayMusic();
             else if (command == "take a reminder" || command == "make a reminder")
@@ -186,9 +203,16 @@ namespace VocalAssistant
                 await SearchRemainder();
             else if (command == "tell me something interesting")
                 await RandomOnWiki();
+            else if (command == "what's the weather like today" || command == "how's the weather today")
+                await GetWeatherInfo();
+            else if (command == "shut down")
+            {
+                await GUIOutput("Shutting down the system.", true);
+                Windows.System.ShutdownManager.BeginShutdown(Windows.System.ShutdownKind.Shutdown, TimeSpan.FromSeconds(0));
+            }
             else
             {
-                await speaker.SayAsync("I'm sorry, I'm afraid I can't do that.");
+                await GUIOutput("I'm sorry, I'm afraid I can't do that.", true);
 
                 state = AssistantState.BACKGROUND_LISTEN;
             }
@@ -196,9 +220,14 @@ namespace VocalAssistant
             return;
         }
 
-        private void TellJokes()
+        private async Task TellJokes()
         {
-            speaker.SayAsync("A neutron walks into a bar and asks: how much for a beer?, bartender responds: for you? no charge.");
+            var http = new HttpClient();
+            http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
+            var content = await http.GetAsync("https://icanhazdadjoke.com/");
+            var joke = await content.Content.ReadAsStringAsync();
+
+            await GUIOutput(joke, true);
 
             state = AssistantState.BACKGROUND_LISTEN;
         }
@@ -226,14 +255,14 @@ namespace VocalAssistant
             if (command == "close")
             {
                 player.Pause();
-                await speaker.SayAsync("Music player closed.");
+                await GUIOutput("Music player closed.", true);
                 songIndex = 0;
                 state = AssistantState.BACKGROUND_LISTEN;
             }
             else if (command == "stop")
             {
                 if (player.CurrentState == MediaPlayerState.Paused)
-                    await speaker.SayAsync("I'm sorry, but the music is already paused.");
+                    await GUIOutput("I'm sorry, but the music is already paused.", true);
                 else
                     player.Pause();
                 state = AssistantState.BACKGROUND_PLAYING_SONG;
@@ -241,7 +270,7 @@ namespace VocalAssistant
             else if (command == "play")
             {
                 if (player.CurrentState == MediaPlayerState.Playing)
-                    await speaker.SayAsync("I'm sorry, but the music is already playing.");
+                    await GUIOutput("I'm sorry, but the music is already playing.", true);
                 else
                     player.Play();
                 state = AssistantState.BACKGROUND_PLAYING_SONG;
@@ -265,7 +294,7 @@ namespace VocalAssistant
                     songIndex = 0;
                 else
                     songIndex++;
-                PlayMusic();
+                await PlayMusic();
             }
             else if (command == "previous")
             {
@@ -274,11 +303,11 @@ namespace VocalAssistant
                     songIndex = songList.Count - 1;
                 else
                     songIndex--;
-                PlayMusic();
+                await PlayMusic();
             }
             else
             {
-                await speaker.SayAsync("I'm sorry, I'm afraid I can't do that.");
+                await GUIOutput("I'm sorry, I'm afraid I can't do that.", true);
                 state = AssistantState.BACKGROUND_PLAYING_SONG;
             }
         }
@@ -293,11 +322,7 @@ namespace VocalAssistant
 
             var compilation_status = await remainder_recon.CompileConstraintsAsync();
 
-            if (compilation_status.Status != SpeechRecognitionResultStatus.Success)
-                Debug.WriteLine("Failed to compile date constraint! \n");
-
-
-            await speaker.SayAsync("For which day?");
+            await GUIOutput("For which day?", true);
 
             SpeechRecognitionResult date;
             SpeechRecognitionResult details;
@@ -306,22 +331,19 @@ namespace VocalAssistant
             {
                 date = await remainder_recon.RecognizeAsync();
                 if (date.Text.Length == 0)
-                    await speaker.SayAsync("Please, repeat what you said.");
+                    await GUIOutput("Please, repeat what you said.", true);
                 else
                 {
-                    await speaker.SayAsync($"You said: {date.Text}. Is it correct?");
+                    await GUIOutput($"You said: {date.Text}. Is it correct?", true);
                     SpeechRecognitionResult ack = await task_recognizer.RecognizeAsync();
-                    Debug.WriteLine($"DEBUG: ack: {ack.Text} \n");
                     if (ack.Text == "yes")
                         finished = true;
                     else
-                        await speaker.SayAsync("Please, repeat the date.");
+                        await GUIOutput("Please, repeat the date.", true);
                 }
             } while (!finished);
 
-            Debug.WriteLine("Data: " + date.Text);
-
-            await speaker.SayAsync("What should I remember?");
+            await GUIOutput("What should I remember?", true);
             finished = false;
             int cnt = 0;
             do
@@ -331,11 +353,11 @@ namespace VocalAssistant
                 {
                     cnt++;
                     if (cnt < 3)
-                        await speaker.SayAsync("Please, repeat what you said.");
+                        await GUIOutput("Please, repeat what you said.", true);
                 }
                 else
                 {
-                    await speaker.SayAsync($"You said: {details.Text}. Is it correct?");
+                    await GUIOutput($"You said: {details.Text}. Is it correct?", true);
                     SpeechRecognitionResult ack = await task_recognizer.RecognizeAsync();
                     if (ack.Text == "yes")
                         finished = true;
@@ -343,7 +365,7 @@ namespace VocalAssistant
                     {
                         cnt++;
                         if (cnt < 3)
-                            await speaker.SayAsync("Please, repeat the remainder.");
+                            await GUIOutput("Please, repeat the remainder.", true);
                     }
                 }
             } while (!finished && cnt < 3);
@@ -353,10 +375,10 @@ namespace VocalAssistant
                 //add the reaminder to the list
                 remainders.Add(CreateRemainder(date.Text, details.Text));
 
-                await speaker.SayAsync("Remainder saved.");
+                await GUIOutput("Remainder saved.", true);
             }
             else
-                await speaker.SayAsync("Sorry, I couldn't complete the task.");
+                await GUIOutput("Sorry, I couldn't complete the task.", true);
 
             state = AssistantState.BACKGROUND_LISTEN;
         }
@@ -368,9 +390,6 @@ namespace VocalAssistant
 
             day = date.Split(' ')[1];
             month = date.Split(' ')[0];
-
-            Debug.WriteLine($"DEBUG: day:{day}, month:{month} \n");
-            Debug.WriteLine($"DEBUG: details: {details} \n");
 
             int.TryParse(day, out output.day);
 
@@ -417,8 +436,6 @@ namespace VocalAssistant
                     break;
             }
 
-            Debug.WriteLine($"DEBUG: int day: {output.day}  int month: {output.month}");
-
             output.details = details;
 
             return output;
@@ -434,13 +451,12 @@ namespace VocalAssistant
                 if (remainders[i].month == now.Month && remainders[i].day == now.Day)
                 {
                     rem++;
-                    await speaker.SayAsync($"Remainder {rem}: {remainders[i].details}.");
-                    Debug.WriteLine($"DEBUG: counter: {rem} \n");
+                    await GUIOutput($"Remainder {rem}: {remainders[i].details}.", true);
                 }
             }
 
             if (rem == 0)
-                await speaker.SayAsync("You have no remainders for today.");
+                await GUIOutput("You have no remainders for today.", true);
 
             state = AssistantState.BACKGROUND_LISTEN;
         }
@@ -467,81 +483,86 @@ namespace VocalAssistant
 
         private async Task RandomOnWiki()
         {
-            string webPage = await GetStringFromWeb("http://en.wikipedia.org/wiki/Special:Random");
-            //Debug.WriteLine(webPage + "\n");
-
-            //Extrapolate first paragraph
-            int idx1 = webPage.IndexOf("<div class=\"mw-parser-output\">");
-            string temp = webPage.Substring(idx1);
-            int idx2 = webPage.IndexOf("</p>") + "</p>".Length;
-            temp = temp.Substring(0, idx2 - idx1);
-            idx1 = temp.IndexOf("<p>");
-            temp = temp.Substring(idx1);
-
-            //Filter out HTML code
-            int c = 0;
-            var temp_builder = new StringBuilder();
-            while (c < temp.Length)
+            try
             {
-                if (temp[c] == '&')
+                string webPage = await GetStringFromWeb("http://en.wikipedia.org/wiki/Special:Random");
+
+                //Extrapolate first paragraph
+                int idx1 = webPage.IndexOf("<div class=\"mw-parser-output\">");
+                string temp = webPage.Substring(idx1);
+                int idx2 = webPage.IndexOf("</p>") + "</p>".Length;
+                temp = temp.Substring(0, idx2 - idx1);
+                idx1 = temp.IndexOf("<p>");
+                temp = temp.Substring(idx1);
+
+                //Filter out HTML code
+                int c = 0;
+                var temp_builder = new StringBuilder();
+                while (c < temp.Length)
                 {
-                    int i = c;
-                    bool found = false;
-                    while (!found && i < temp.Length)
+                    if (temp[c] == '&')
                     {
-                        i++;
-
-                        if (temp[i] == ';')
-                            found = true;
-                    }
-
-                    if (found)
-                    {
-                        //extract substring
-                        string s = temp.Substring(c, (i - c) + 1);
-
-                        if (s == "&#91;")
+                        int i = c;
+                        bool found = false;
+                        while (!found && i < temp.Length)
                         {
-                            temp_builder.Append('[');
-                            c = i + 1;
+                            i++;
+
+                            if (temp[i] == ';')
+                                found = true;
                         }
-                        else if (s == "&#93;")
+
+                        if (found)
                         {
-                            temp_builder.Append(']');
-                            c = i + 1;
+                            //extract substring
+                            string s = temp.Substring(c, (i - c) + 1);
+
+                            if (s == "&#91;")
+                            {
+                                temp_builder.Append('[');
+                                c = i + 1;
+                            }
+                            else if (s == "&#93;")
+                            {
+                                temp_builder.Append(']');
+                                c = i + 1;
+                            }
                         }
                     }
+                    temp_builder.Append(temp[c]);
+                    c++;
                 }
-                temp_builder.Append(temp[c]);
-                c++;
+
+                temp = temp_builder.ToString();
+
+                var bracket_stack = new Stack<string>();
+                string output;
+                var builder = new StringBuilder();
+                int points = 0;
+                for (int i = 0; i < temp.Length; i++)
+                {
+                    if (temp[i] == '<' || temp[i] == '(' || temp[i] == '[' || temp[i] == '{')
+                        bracket_stack.Push(temp[i].ToString());
+                    else if (temp[i] == '>' || temp[i] == ')' || temp[i] == ']' || temp[i] == '}')
+                        bracket_stack.Pop();
+                    else if (bracket_stack.Count == 0)
+                        builder.Append(temp[i]);
+
+                    if (temp[i] == '.')
+                        points++;
+
+                    if (points == 2)
+                        break;
+                }
+                output = builder.ToString();
+
+                await GUIOutput(output, true);
             }
-
-            temp = temp_builder.ToString();
-
-            var bracket_stack = new Stack<string>();
-            string output;
-            var builder = new StringBuilder();
-            int points = 0;
-            for (int i = 0; i < temp.Length; i++)
+            catch
             {
-                if (temp[i] == '<' || temp[i] == '(' || temp[i] == '[' || temp[i] == '{')
-                    bracket_stack.Push(temp[i].ToString());
-                else if (temp[i] == '>' || temp[i] == ')' || temp[i] == ']' || temp[i] == '}')
-                    bracket_stack.Pop();
-                else if (bracket_stack.Count == 0)
-                    builder.Append(temp[i]);
-
-                if (temp[i] == '.')
-                    points++;
-
-                if (points == 2)
-                    break;
+                await GUIOutput("I'm sorry, I wasn't able to find any information.", true);
             }
-            output = builder.ToString();
-
-            // TODO: eventualmente fare il filtraggi dei punti (massimo due punti per frase) in un altro ciclo
-
-            await speaker.SayAsync(output);
+            
 
             state = AssistantState.BACKGROUND_LISTEN;
         }
@@ -553,6 +574,40 @@ namespace VocalAssistant
             WebResponse myResp = await myReq.GetResponseAsync();
             StreamReader sr = new StreamReader(myResp.GetResponseStream(), System.Text.Encoding.UTF8);
             return sr.ReadToEnd();
+        }
+
+        private async Task GetWeatherInfo()
+        {
+            //Get weather infos
+            try
+            {
+                var position = await LocationManager.GetPosition();
+
+                RootObject my_weather = await OpenWeatherMapProxy.GetWeather(position.Coordinate.Latitude, position.Coordinate.Longitude);
+
+                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            this_main_page.SwitchToWeather();
+                                            this_main_page.WeatherOut(my_weather);
+                                        });
+
+                await GUIOutput("The weather forecast for " + my_weather.name + " are: " + my_weather.weather[0].description +
+                                " with temperature between " + ((int)my_weather.main.temp_min).ToString() + " °C and " + ((int)my_weather.main.temp_max).ToString() + " °C. " +
+                                " The humidity rate is equal to " + ((int)my_weather.main.humidity).ToString() + " % and the wind speed is " + ((int)my_weather.wind.speed).ToString() + " meters per second.", true);
+
+                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            this_main_page.SwitchToDefault();
+                                        });
+            }
+            catch
+            {
+                await GUIOutput("I'm sorry, I was unable to retrieve weather informations.", true);
+            }
+
+            state = AssistantState.BACKGROUND_LISTEN;
         }
 
         /// <summary>

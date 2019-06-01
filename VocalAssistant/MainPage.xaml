@@ -10,8 +10,29 @@
 
     <Grid>
         <Grid.Background>
-            <SolidColorBrush Color="#FF2D89F0"/>
+            <SolidColorBrush Color="#192936"/>
         </Grid.Background>
-        <TextBlock x:Name="output" HorizontalAlignment="Center" Margin="0,372,0,0" Text="Something" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="20" FontWeight="Normal"/>
+        <Grid x:Name="defaultGrid" Visibility="Visible">
+            <Grid HorizontalAlignment="Center" Height="100" Margin="0,240,0,0" VerticalAlignment="Top" Width="719" RenderTransformOrigin="0.507,0.521">
+                <TextBlock x:Name="output" HorizontalAlignment="Center" Margin="0,0
+                       ,0,0" Text="Setting up..." TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="20" FontWeight="Normal"/>
+            </Grid>
+            <Image x:Name="logo" HorizontalAlignment="Center" Height="220" Margin="0,20,0,0" VerticalAlignment="Top" Width="300"/>
+        </Grid>
+
+        <Grid x:Name="weatherGrid" Visibility="Collapsed">
+            <StackPanel>
+                <StackPanel  VerticalAlignment="Center" Margin="0,0,0,0">
+                    <Image Name="ResultImage" Width="200" Height="200" HorizontalAlignment="Center"/>
+                    <TextBlock Name="LocationTextBlock" FontSize="50" Foreground="White" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Name="DescriptionTextBlock" FontSize="35" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Name="TempTextBlock" FontSize="30" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Name="HumidityTextBlock" FontSize="30" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Name="WindTextBlock" FontSize="30" Foreground="White" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
     </Grid>
+
+
 </Page>
