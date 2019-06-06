@@ -12,6 +12,17 @@
         <Grid.Background>
             <SolidColorBrush Color="#192936"/>
         </Grid.Background>
+        <Grid>
+            <AppBarButton x:Name="Options" Icon="GlobalNavigationButton" HorizontalAlignment="Left" Margin="722,10,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Height="47">
+                <AppBarButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem x:Name="reboot" Text="Reboot the System" Click="reboot_Click" ></MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="shutdown" Text="Shutdown the System" Click="shutdown_Click" ></MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="restart" Text="Restart the Application" Click="restart_Click" ></MenuFlyoutItem>
+                    </MenuFlyout>
+                </AppBarButton.Flyout>
+            </AppBarButton>
+        </Grid>
         <Grid x:Name="defaultGrid" Visibility="Visible">
             <Grid HorizontalAlignment="Center" Height="100" Margin="0,240,0,0" VerticalAlignment="Top" Width="719" RenderTransformOrigin="0.507,0.521">
                 <TextBlock x:Name="output" HorizontalAlignment="Center" Margin="0,0
@@ -32,6 +43,21 @@
                 </StackPanel>
             </StackPanel>
         </Grid>
+
+        <Grid x:Name="musicPlayerGrid" Visibility="Collapsed">
+            <Grid HorizontalAlignment="Center" Height="100" Margin="0,240,0,0" VerticalAlignment="Top" Width="719" RenderTransformOrigin="0.507,0.521">
+                <TextBlock x:Name="playerOutput" HorizontalAlignment="Center" Margin="0,0
+                       ,0,0" Text="Playing music..." TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="20" FontWeight="Normal"/>
+            </Grid>
+            <Image x:Name="playerLogo" HorizontalAlignment="Center" Height="220" Margin="0,20,0,0" VerticalAlignment="Top" Width="300"/>
+            <AppBarButton x:Name="pause" Icon="Pause" HorizontalAlignment="Left" Margin="323,336,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="pause_Click" Width="50" Height="40"/>
+            <AppBarButton x:Name="play" Icon="Play" HorizontalAlignment="Left" Margin="391,336,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="play_Click" Width="50" Height="40"/>
+            <AppBarButton x:Name="stop" Icon="Cancel" HorizontalAlignment="Left" Margin="258,336,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="stop_Click" Height="40" Width="50"/>
+            <AppBarButton x:Name="previous" Icon="Previous" HorizontalAlignment="Left" Margin="192,336,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="previous_Click" Width="50" Height="40"/>
+            <AppBarButton x:Name="next" Icon="Next" HorizontalAlignment="Left" Margin="456,336,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="next_Click" Width="50" Height="40"/>
+            <Slider x:Name="volume" HorizontalAlignment="Left" Margin="526,340,0,0" VerticalAlignment="Top" Width="121" Height="36" Background="White" ValueChanged="slider_ValueChanged"/>
+        </Grid>
+
     </Grid>
 
 

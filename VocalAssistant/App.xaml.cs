@@ -28,9 +28,6 @@ namespace VocalAssistant
 
     enum AssistantState { BACKGROUND_LISTEN, LISTENING, BACKGROUND_PLAYING_SONG, LISTENING_PLAYING_SONG };
 
-    /// <summary>
-    /// Fornisci un comportamento specifico dell'applicazione in supplemento alla classe Application predefinita.
-    /// </summary>
     sealed partial class App : Application
     {
         private static MainPage this_main_page;
@@ -108,6 +105,16 @@ namespace VocalAssistant
                 await speaker.SayAsync(text);
         }
 
+        //Player volume control function
+        private async Task PlayerVolumeSet(double value)
+        {
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            this_main_page.SetVolumeSliderValue(value);
+                                        });
+        }
+
         private void background_recognizer_StateChanged(SpeechRecognizer sender, SpeechRecognizerStateChangedEventArgs args)
         {
             if (args.State.ToString() == "Idle" && (state == AssistantState.BACKGROUND_LISTEN || state == AssistantState.BACKGROUND_PLAYING_SONG))
@@ -132,6 +139,13 @@ namespace VocalAssistant
                                             this_main_page.AnimatedLogo();
                                         });
             }
+
+            //Reset GUI script
+            if (state == AssistantState.BACKGROUND_PLAYING_SONG)
+                GUIOutput("Playing music.", false);
+            
+            if (state == AssistantState.BACKGROUND_LISTEN)
+                GUIOutput("Hi, I'm Lawrence. How can I help you?", false);
         }
 
         private void ContinuousRecognitionSession_ResultGenerated(SpeechContinuousRecognitionSession sender, SpeechContinuousRecognitionResultGeneratedEventArgs args)
@@ -151,7 +165,7 @@ namespace VocalAssistant
             {
                 state = AssistantState.LISTENING_PLAYING_SONG;
                 player_volume = player.Volume;
-                player.Volume = 0.1;
+                PlayerVolumeSet(10.0);
             }
 
             // Stop continuous recognition session
@@ -168,14 +182,8 @@ namespace VocalAssistant
             else if (state == AssistantState.LISTENING_PLAYING_SONG)
             {
                 await SongTaskList(command.Text);
-                player.Volume = player_volume;
+                //player.Volume = player_volume;
             }
-
-            //Reset GUI script
-            if(state == AssistantState.BACKGROUND_PLAYING_SONG)
-                await GUIOutput("Playing music.", false);
-            else
-                await GUIOutput("How can I help you?", false);
 
             //Restart continuos recognition session
             await background_recognizer.ContinuousRecognitionSession.StartAsync();
@@ -193,6 +201,12 @@ namespace VocalAssistant
 
                 state = AssistantState.BACKGROUND_LISTEN;
             }
+            else if (command == "what day is today")
+            {
+                await GUIOutput(System.DateTime.Today.ToString("D"), true);
+
+                state = AssistantState.BACKGROUND_LISTEN;
+            }
             else if (command == "tell me a joke")
                 await TellJokes();
             else if (command == "play some music")
@@ -205,11 +219,6 @@ namespace VocalAssistant
                 await RandomOnWiki();
             else if (command == "what's the weather like today" || command == "how's the weather today")
                 await GetWeatherInfo();
-            else if (command == "shut down")
-            {
-                await GUIOutput("Shutting down the system.", true);
-                Windows.System.ShutdownManager.BeginShutdown(Windows.System.ShutdownKind.Shutdown, TimeSpan.FromSeconds(0));
-            }
             else
             {
                 await GUIOutput("I'm sorry, I'm afraid I can't do that.", true);
@@ -238,11 +247,21 @@ namespace VocalAssistant
             StorageFile song = await Package.Current.InstalledLocation.GetFileAsync(@"Music\" + songList[songIndex]);
 
 
+            //Switch the main page grid to music player
+            if (state == AssistantState.LISTENING)
+            {
+                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                         () =>
+                                         {
+                                             this_main_page.SwitchToPlayer();
+                                         });
+            }
+
+            await PlayerVolumeSet(0.35 * 100);
+
             //Play it
-            player.AutoPlay = false;
+            player.AutoPlay = true;
             player.SetFileSource(song);
-            player.Play();
-            player.Volume = 0.35;
 
             //Change the state of the assistant
             state = AssistantState.BACKGROUND_PLAYING_SONG;
@@ -257,6 +276,13 @@ namespace VocalAssistant
                 player.Pause();
                 await GUIOutput("Music player closed.", true);
                 songIndex = 0;
+
+                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                       () =>
+                                       {
+                                           this_main_page.SwitchToDefault();
+                                       });
+
                 state = AssistantState.BACKGROUND_LISTEN;
             }
             else if (command == "stop")
@@ -278,13 +304,20 @@ namespace VocalAssistant
             else if (command == "volume up")
             {
                 if (player_volume <= 0.8)
+                {
                     player_volume += 0.2;
+                    PlayerVolumeSet(player_volume * 100);
+                }
+                    
                 state = AssistantState.BACKGROUND_PLAYING_SONG;
             }
             else if (command == "volume down")
             {
                 if (player_volume >= 0.2)
+                {
                     player_volume -= 0.2;
+                    PlayerVolumeSet(player_volume * 100);
+                }
                 state = AssistantState.BACKGROUND_PLAYING_SONG;
             }
             else if (command == "next")
@@ -608,6 +641,64 @@ namespace VocalAssistant
             }
 
             state = AssistantState.BACKGROUND_LISTEN;
+        }
+
+        //Slider volume control function
+        public void SetMediaPlayerVolume(double val)
+        {
+            player.Volume = val / 100.0;
+        }
+
+        //Play button control function
+        public void SetMediaPlayerPlay()
+        {
+            if (player.CurrentState != MediaPlayerState.Playing)
+                player.Play();
+        }
+
+        //Close button control function
+        public async Task CloseMediaPlayer()
+        {
+            player.Pause();
+            GUIOutput("Music player closed.", true);
+            songIndex = 0;
+
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                   () =>
+                                   {
+                                       this_main_page.SwitchToDefault();
+                                   });
+
+            state = AssistantState.BACKGROUND_LISTEN;
+        }
+
+        //Stop button control function
+        public void SetMediaPlayerStop()
+        {
+            if (player.CurrentState == MediaPlayerState.Playing)
+                player.Pause();
+        }
+
+        //Next button control function
+        public async Task SetMediaPlayerNext()
+        {
+            player.Pause();
+            if (songIndex + 1 >= songList.Count)
+                songIndex = 0;
+            else
+                songIndex++;
+            await PlayMusic();
+        }
+
+        //Previous button control function
+        public async Task SetMediaPlayerPrevious()
+        {
+            player.Pause();
+            if (songIndex - 1 < 0)
+                songIndex = songList.Count - 1;
+            else
+                songIndex--;
+            await PlayMusic();
         }
 
         /// <summary>

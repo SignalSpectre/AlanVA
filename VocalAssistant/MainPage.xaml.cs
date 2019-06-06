@@ -1,4 +1,5 @@
 ﻿using System;
+using Windows.ApplicationModel.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
@@ -28,11 +29,14 @@ namespace VocalAssistant
         public void AnimatedLogo()
         {
             logo.Source = logo_animated;
+            playerLogo.Source = logo_animated;
         }
 
         public void StaticLogo()
         {
             logo.Source = logo_static;
+            playerLogo.Source = logo_static;
+
         }
 
         public void Output(string textToOutput)
@@ -44,12 +48,21 @@ namespace VocalAssistant
         {
             defaultGrid.Visibility = Visibility.Collapsed;
             weatherGrid.Visibility = Visibility.Visible;
+            musicPlayerGrid.Visibility = Visibility.Collapsed;
         }
 
         public void SwitchToDefault()
         {
             defaultGrid.Visibility = Visibility.Visible;
             weatherGrid.Visibility = Visibility.Collapsed;
+            musicPlayerGrid.Visibility = Visibility.Collapsed;
+        }
+
+        public void SwitchToPlayer()
+        {
+            defaultGrid.Visibility = Visibility.Collapsed;
+            weatherGrid.Visibility = Visibility.Collapsed;
+            musicPlayerGrid.Visibility = Visibility.Visible;
         }
 
         public void WeatherOut(RootObject weather)
@@ -61,6 +74,56 @@ namespace VocalAssistant
             TempTextBlock.Text = "Temperature: " + ((int)weather.main.temp).ToString() + " °C  (min: " + ((int)weather.main.temp_min).ToString() + " °C, max: " + ((int)weather.main.temp_max).ToString() + " °C)";
             HumidityTextBlock.Text = "Humidity: " + ((int)weather.main.humidity).ToString() + "%";
             WindTextBlock.Text = "Wind speed: " + ((int)weather.wind.speed).ToString() + " m/s";
+        }
+
+        public void SetVolumeSliderValue(double value)
+        {
+            volume.Value = value;
+        }
+
+        private void previous_Click(object sender, RoutedEventArgs e)
+        {
+            ((App)(Application.Current)).SetMediaPlayerPrevious();
+        }
+
+        private void stop_Click(object sender, RoutedEventArgs e)
+        {
+            ((App)(Application.Current)).CloseMediaPlayer();
+        }
+
+        private void play_Click(object sender, RoutedEventArgs e)
+        {
+            ((App)(Application.Current)).SetMediaPlayerPlay();
+        }
+
+        private void pause_Click(object sender, RoutedEventArgs e)
+        {
+            ((App)(Application.Current)).SetMediaPlayerStop();
+        }
+
+        private void next_Click(object sender, RoutedEventArgs e)
+        {
+            ((App)(Application.Current)).SetMediaPlayerNext();
+        }
+
+        private void slider_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            ((App)(Application.Current)).SetMediaPlayerVolume(volume.Value);
+        }
+
+        private void reboot_Click(object sender, RoutedEventArgs e)
+        {
+            Windows.System.ShutdownManager.BeginShutdown(Windows.System.ShutdownKind.Restart, TimeSpan.FromSeconds(0));
+        }
+
+        private void shutdown_Click(object sender, RoutedEventArgs e)
+        {
+            Windows.System.ShutdownManager.BeginShutdown(Windows.System.ShutdownKind.Shutdown, TimeSpan.FromSeconds(0));
+        }
+
+        private void restart_Click(object sender, RoutedEventArgs e)
+        {
+            CoreApplication.RequestRestartAsync("");
         }
     }
 }
