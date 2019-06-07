@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Core;
@@ -10,10 +9,8 @@ using Windows.UI.Xaml.Navigation;
 using Windows.Media.SpeechRecognition;
 using Windows.Storage;
 using Windows.Media.Playback;
-using System.Net;
 using System.Threading.Tasks;
 using AssistantSpeechSynthesis;
-using System.Text;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
@@ -26,7 +23,7 @@ namespace VocalAssistant
         public string details;
     }
 
-    enum AssistantState { BACKGROUND_LISTEN, LISTENING, BACKGROUND_PLAYING_SONG, LISTENING_PLAYING_SONG };
+    enum AssistantState { BACKGROUND_LISTEN, LISTENING, BACKGROUND_PLAYING_SONG, LISTENING_PLAYING_SONG, BACKGROUND_STOPWATCH, LISTENING_STOPWATCH };
 
     sealed partial class App : Application
     {
@@ -145,7 +142,7 @@ namespace VocalAssistant
 
         private void background_recognizer_StateChanged(SpeechRecognizer sender, SpeechRecognizerStateChangedEventArgs args)
         {
-            if (args.State.ToString() == "Idle" && (state == AssistantState.BACKGROUND_LISTEN || state == AssistantState.BACKGROUND_PLAYING_SONG))
+            if (args.State.ToString() == "Idle" && (state == AssistantState.BACKGROUND_LISTEN || state == AssistantState.BACKGROUND_PLAYING_SONG || state == AssistantState.BACKGROUND_STOPWATCH))
                 background_recognizer.ContinuousRecognitionSession.StartAsync();
 
             //Change logo image
@@ -192,6 +189,8 @@ namespace VocalAssistant
                 player_volume = player.Volume;
                 PlayerVolumeSet(10.0);
             }
+            else if (state == AssistantState.BACKGROUND_STOPWATCH)
+                state = AssistantState.LISTENING_STOPWATCH;
 
             // Stop continuous recognition session
             await background_recognizer.ContinuousRecognitionSession.StopAsync();
@@ -208,6 +207,17 @@ namespace VocalAssistant
             {
                 await SongTaskList(command.Text);
                 //player.Volume = player_volume;
+            }
+            else if (state == AssistantState.LISTENING_STOPWATCH)
+            {
+                if(command.Text == "close")
+                {
+                    CloseStopWatch();
+                }
+                else
+                {
+                    await GUIOutput("I'm sorry, I'm afraid I can't do that.", true);
+                }
             }
 
             //Restart continuos recognition session
@@ -246,6 +256,8 @@ namespace VocalAssistant
                 await GetWeatherInfo();
             else if (command == "inspire me")
                 await GetInspiringQuote();
+            else if (command == "open the stopwatch")
+                await OpenStopWatch();
             else
             {
                 await GUIOutput("I'm sorry, I'm afraid I can't do that.", true);
@@ -646,6 +658,28 @@ namespace VocalAssistant
             {
                 await GUIOutput("I'm sorry, I was unable to retrieve weather informations.", true);
             }
+
+            state = AssistantState.BACKGROUND_LISTEN;
+        }
+
+        private async Task OpenStopWatch()
+        {
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            this_main_page.SwitchToStopWatch();
+                                        });
+
+            state = AssistantState.BACKGROUND_STOPWATCH;
+        }
+
+        private async Task CloseStopWatch()
+        {
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            this_main_page.SwitchToDefault();
+                                        });
 
             state = AssistantState.BACKGROUND_LISTEN;
         }

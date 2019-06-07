@@ -56,6 +56,13 @@
             <Slider x:Name="volume" HorizontalAlignment="Left" Margin="530,345,0,0" VerticalAlignment="Top" Width="130" Height="44" Background="White" ValueChanged="slider_ValueChanged"/>
         </Grid>
 
+        <Grid x:Name="stopWatchGrid" Visibility="Collapsed">
+            <TextBlock x:Name="textSW" HorizontalAlignment="Center" Margin="0,140,0,0" Text="00:00:00" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="50"/>
+            <Button x:Name="resetSW" Content="Reset" HorizontalAlignment="Left" Margin="487,322,0,0" VerticalAlignment="Top" Foreground="#192936" Background="White" Click="resetSW_Click"/>
+            <Button x:Name="stopSW" Content="Stop" HorizontalAlignment="Center" Margin="0,322,0,0" VerticalAlignment="Top" Foreground="#192936" Background="White" Click="stopSW_Click"/>
+            <Button x:Name="playSW" Content="Start" HorizontalAlignment="Left" Margin="271,322,0,0" VerticalAlignment="Top" Foreground="#192936" Background="White" Click="playSW_Click"/>
+        </Grid>
+
     </Grid>
 
 

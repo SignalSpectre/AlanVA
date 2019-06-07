@@ -15,6 +15,8 @@ namespace VocalAssistant
     {
         private BitmapImage logo_animated;
         private BitmapImage logo_static;
+        private DispatcherTimer clockSW;
+        private uint stopwatchCount;
 
         public MainPage()
         {
@@ -24,6 +26,26 @@ namespace VocalAssistant
             logo_animated = new BitmapImage(new Uri(icon_animated, UriKind.Absolute));
             logo_static = new BitmapImage(new Uri(icon, UriKind.Absolute));
             logo.Source = logo_animated;
+
+            stopwatchCount = 0;
+
+            clockSW = new DispatcherTimer();
+            clockSW.Interval = new TimeSpan(0, 0, 1);
+
+            //Set event handler
+            clockSW.Tick += clockSW_Tick;
+        }
+
+        private void clockSW_Tick(object sender, object e)
+        {
+            stopwatchCount++;
+
+            uint hours = stopwatchCount / 3600;
+            uint seconds = stopwatchCount % 3600;
+            uint minutes = seconds / 60;
+            seconds = seconds % 60;
+
+            textSW.Text = hours.ToString("D2") + ":" + minutes.ToString("D2") + ":" + seconds.ToString("D2");
         }
 
         public void AnimatedLogo()
@@ -49,6 +71,7 @@ namespace VocalAssistant
             defaultGrid.Visibility = Visibility.Collapsed;
             weatherGrid.Visibility = Visibility.Visible;
             musicPlayerGrid.Visibility = Visibility.Collapsed;
+            stopWatchGrid.Visibility = Visibility.Collapsed;
         }
 
         public void SwitchToDefault()
@@ -56,6 +79,7 @@ namespace VocalAssistant
             defaultGrid.Visibility = Visibility.Visible;
             weatherGrid.Visibility = Visibility.Collapsed;
             musicPlayerGrid.Visibility = Visibility.Collapsed;
+            stopWatchGrid.Visibility = Visibility.Collapsed;
         }
 
         public void SwitchToPlayer()
@@ -63,6 +87,15 @@ namespace VocalAssistant
             defaultGrid.Visibility = Visibility.Collapsed;
             weatherGrid.Visibility = Visibility.Collapsed;
             musicPlayerGrid.Visibility = Visibility.Visible;
+            stopWatchGrid.Visibility = Visibility.Collapsed;
+        }
+
+        public void SwitchToStopWatch()
+        {
+            defaultGrid.Visibility = Visibility.Collapsed;
+            weatherGrid.Visibility = Visibility.Collapsed;
+            musicPlayerGrid.Visibility = Visibility.Collapsed;
+            stopWatchGrid.Visibility = Visibility.Visible;
         }
 
         public void WeatherOut(RootObject weather)
@@ -130,6 +163,23 @@ namespace VocalAssistant
         private void restart_Click(object sender, RoutedEventArgs e)
         {
             CoreApplication.RequestRestartAsync("");
+        }
+
+        private void playSW_Click(object sender, RoutedEventArgs e)
+        {
+            clockSW.Start();
+        }
+
+        private void stopSW_Click(object sender, RoutedEventArgs e)
+        {
+            clockSW.Stop();
+        }
+
+        private void resetSW_Click(object sender, RoutedEventArgs e)
+        {
+            clockSW.Stop();
+            stopwatchCount = 0;
+            textSW.Text = "00:00:00";
         }
     }
 }
