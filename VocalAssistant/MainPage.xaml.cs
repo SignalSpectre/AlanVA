@@ -81,6 +81,12 @@ namespace VocalAssistant
             volume.Value = value;
         }
 
+        public void  SetMediaPlayerText(string title, string artist)
+        {
+            playerOutputTitle.Text = title;
+            playerOutputArtist.Text = artist;
+        }
+
         private void previous_Click(object sender, RoutedEventArgs e)
         {
             ((App)(Application.Current)).SetMediaPlayerPrevious();

@@ -108,6 +108,7 @@
     </Compile>
     <Compile Include="OpenWeatherMapProxy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Quote.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -136,10 +137,11 @@
     <Content Include="Assets\weather_icons\13n.png" />
     <Content Include="Assets\weather_icons\50d.png" />
     <Content Include="Assets\weather_icons\50n.png" />
-    <Content Include="Music\Fly Me to the Moon %28In Other Words%29.mp3" />
+    <Content Include="Music\Fly Me to the Moon %28In Other Words%29 - Brenda Lee.mp3" />
+    <Content Include="Music\Running in The 90%27s.mp3" />
     <Content Include="remainder_rules.xml" />
-    <Content Include="Music\queen.wma" />
-    <Content Include="Music\shoot.wma" />
+    <Content Include="Music\Bohemian Rapsody - Queen.wma" />
+    <Content Include="Music\Shoot To Thrill - ACDC.wma" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />

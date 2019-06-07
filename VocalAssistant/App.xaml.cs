@@ -90,6 +90,7 @@ namespace VocalAssistant
             background_recognizer.ContinuousRecognitionSession.ResultGenerated += ContinuousRecognitionSession_ResultGenerated;
             background_recognizer.StateChanged += background_recognizer_StateChanged;
             player.MediaEnded += player_MediaEnded;
+            player.CurrentStateChanged += player_CurrentStateChanged;
         }
 
         //Print function
@@ -113,6 +114,33 @@ namespace VocalAssistant
                                         {
                                             this_main_page.SetVolumeSliderValue(value);
                                         });
+        }
+
+        //Player text control function
+        private async Task PlayerTextSet(string title, string artist)
+        {
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            this_main_page.SetMediaPlayerText(title, artist);
+                                        });
+        }
+
+        private void player_MediaEnded(MediaPlayer sender, object args)
+        {
+            SetMediaPlayerNext();
+        }
+
+        private void player_CurrentStateChanged(MediaPlayer sender, object args)
+        {
+            if (player.CurrentState == MediaPlayerState.Playing)
+            {
+                PlayerTextSet(ExtractMetadata(songIndex).Key, ExtractMetadata(songIndex).Value);
+            }
+            else if (player.CurrentState == MediaPlayerState.Paused)
+                PlayerTextSet("Paused", "");
+            else if (player.CurrentState == MediaPlayerState.Buffering)
+                PlayerTextSet("Loading media", "");
         }
 
         private void background_recognizer_StateChanged(SpeechRecognizer sender, SpeechRecognizerStateChangedEventArgs args)
@@ -140,10 +168,7 @@ namespace VocalAssistant
                                         });
             }
 
-            //Reset GUI script
-            if (state == AssistantState.BACKGROUND_PLAYING_SONG)
-                GUIOutput("Playing music.", false);
-            
+            //Reset GUI script            
             if (state == AssistantState.BACKGROUND_LISTEN)
                 GUIOutput("Hi, I'm Lawrence. How can I help you?", false);
         }
@@ -219,6 +244,8 @@ namespace VocalAssistant
                 await RandomOnWiki();
             else if (command == "what's the weather like today" || command == "how's the weather today")
                 await GetWeatherInfo();
+            else if (command == "inspire me")
+                await GetInspiringQuote();
             else
             {
                 await GUIOutput("I'm sorry, I'm afraid I can't do that.", true);
@@ -274,7 +301,6 @@ namespace VocalAssistant
             if (command == "close")
             {
                 player.Pause();
-                await GUIOutput("Music player closed.", true);
                 songIndex = 0;
 
                 await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
@@ -494,11 +520,6 @@ namespace VocalAssistant
             state = AssistantState.BACKGROUND_LISTEN;
         }
 
-        private void player_MediaEnded(MediaPlayer sender, Object args)
-        {
-            state = AssistantState.BACKGROUND_LISTEN;
-        }
-
         private async Task CreateSongList()
         {
             StorageFolder installed_location = Package.Current.InstalledLocation;
@@ -518,78 +539,58 @@ namespace VocalAssistant
         {
             try
             {
-                string webPage = await GetStringFromWeb("http://en.wikipedia.org/wiki/Special:Random");
+                var http = new HttpClient();
 
-                //Extrapolate first paragraph
-                int idx1 = webPage.IndexOf("<div class=\"mw-parser-output\">");
-                string temp = webPage.Substring(idx1);
-                int idx2 = webPage.IndexOf("</p>") + "</p>".Length;
-                temp = temp.Substring(0, idx2 - idx1);
-                idx1 = temp.IndexOf("<p>");
-                temp = temp.Substring(idx1);
-
-                //Filter out HTML code
-                int c = 0;
-                var temp_builder = new StringBuilder();
-                while (c < temp.Length)
+                string page_str, title;
+                int idx1, idx2;
+                do
                 {
-                    if (temp[c] == '&')
+                    var rand_page = await http.GetAsync("http://en.wikipedia.org/wiki/Special:Random");
+                    page_str = await rand_page.Content.ReadAsStringAsync();
+                    idx2 = page_str.IndexOf(" - Wikipedia");
+                } while (idx2 == -1);
+
+                idx1 = page_str.IndexOf("<title>") + "<title>".Length;
+                title = page_str.Substring(idx1, idx2 - idx1).Replace(' ', '_');
+                var response = await http.GetAsync("https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&exsentences=2&titles=" + title);
+                string result = await response.Content.ReadAsStringAsync();
+
+                idx1 = result.IndexOf("extract\":\"") + "extract\":\"".Length;
+                idx2 = result.IndexOf("\"}}}}");
+                string content = result.Substring(idx1, idx2 - idx1);
+
+                while (content.IndexOf(" (") != -1)
+                {
+                    idx1 = content.IndexOf(" (");
+                    if (content.IndexOf("))") != -1)
                     {
-                        int i = c;
-                        bool found = false;
-                        while (!found && i < temp.Length)
-                        {
-                            i++;
-
-                            if (temp[i] == ';')
-                                found = true;
-                        }
-
-                        if (found)
-                        {
-                            //extract substring
-                            string s = temp.Substring(c, (i - c) + 1);
-
-                            if (s == "&#91;")
-                            {
-                                temp_builder.Append('[');
-                                c = i + 1;
-                            }
-                            else if (s == "&#93;")
-                            {
-                                temp_builder.Append(']');
-                                c = i + 1;
-                            }
-                        }
+                        idx2 = content.IndexOf("))") + 2;
+                        content = content.Remove(idx1, idx2 - idx1);
                     }
-                    temp_builder.Append(temp[c]);
-                    c++;
+                    else
+                    {
+                        idx2 = content.IndexOf(")") + 1;
+                        content = content.Remove(idx1, idx2 - idx1);
+                    }
                 }
 
-                temp = temp_builder.ToString();
-
-                var bracket_stack = new Stack<string>();
-                string output;
-                var builder = new StringBuilder();
-                int points = 0;
-                for (int i = 0; i < temp.Length; i++)
+                while (content.IndexOf("\\n") != -1)
                 {
-                    if (temp[i] == '<' || temp[i] == '(' || temp[i] == '[' || temp[i] == '{')
-                        bracket_stack.Push(temp[i].ToString());
-                    else if (temp[i] == '>' || temp[i] == ')' || temp[i] == ']' || temp[i] == '}')
-                        bracket_stack.Pop();
-                    else if (bracket_stack.Count == 0)
-                        builder.Append(temp[i]);
-
-                    if (temp[i] == '.')
-                        points++;
-
-                    if (points == 2)
-                        break;
+                    idx1 = content.IndexOf("\\n");
+                    content = content.Remove(idx1, 2);
                 }
-                output = builder.ToString();
 
-                await GUIOutput(output, true);
+                while (content.IndexOf("~") != -1)
+                {
+                    idx1 = content.IndexOf("~");
+                    idx2 = content.IndexOf("\\u2014") + 6;
+                    content = content.Remove(idx1, idx2 - idx1);
+                }
+
+                content = content.Replace(" \\u2014", ",");
+                content = content.Replace("  ", " ");
+
+                await GUIOutput(content, true);
             }
             catch
             {
@@ -600,13 +601,19 @@ namespace VocalAssistant
             state = AssistantState.BACKGROUND_LISTEN;
         }
 
-        private async Task<string> GetStringFromWeb(string url)
+        private async Task GetInspiringQuote()
         {
-            HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
-            myReq.Method = "GET";
-            WebResponse myResp = await myReq.GetResponseAsync();
-            StreamReader sr = new StreamReader(myResp.GetResponseStream(), System.Text.Encoding.UTF8);
-            return sr.ReadToEnd();
+            try
+            {
+                QuoteObject my_quote = await QuoteMapProxy.GetQuote();
+                await GUIOutput(my_quote.contents.quotes[0].quote, true);
+            }
+            catch
+            {
+                await GUIOutput("I'm sorry, I couldn't retrieve any quote.", true);
+            }
+
+            state = AssistantState.BACKGROUND_LISTEN;
         }
 
         private async Task GetWeatherInfo()
@@ -660,7 +667,6 @@ namespace VocalAssistant
         public async Task CloseMediaPlayer()
         {
             player.Pause();
-            GUIOutput("Music player closed.", true);
             songIndex = 0;
 
             await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
@@ -699,6 +705,32 @@ namespace VocalAssistant
             else
                 songIndex--;
             await PlayMusic();
+        }
+
+        //Metadata extraction function
+        private KeyValuePair<string, string> ExtractMetadata(int idx)
+        {
+            string title;
+            string artist;
+
+            int i = songList[idx].LastIndexOf('.');
+            string temp = songList[idx].Remove(i);
+            i = temp.LastIndexOf('-');
+            if(i > 0)
+            {
+               title = temp.Remove(i);
+               artist = temp.Remove(0, i + 1);
+            }
+            else
+            {
+                title = temp;
+                artist = "";
+            }
+            
+
+            KeyValuePair<string, string> result = new KeyValuePair<string, string>(title, artist);
+
+            return result;
         }
 
         /// <summary>
