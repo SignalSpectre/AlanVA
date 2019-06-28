@@ -39,12 +39,9 @@ namespace VocalAssistant
         private List<string> songList = new List<string>();
         private int songIndex;
         private List<Remainder> remainders = new List<Remainder>();
+        private bool remain_in_recipe_view = false;
 
 
-        /// <summary>
-        /// Inizializza l'oggetto Application singleton. Si tratta della prima riga del codice creato
-        /// creato e, come tale, corrisponde all'equivalente logico di main() o WinMain().
-        /// </summary>
         public App()
         {
             this.InitializeComponent();
@@ -81,7 +78,7 @@ namespace VocalAssistant
             if (backup_compilation_result.Status == SpeechRecognitionResultStatus.Success)
                 await background_recognizer.ContinuousRecognitionSession.StartAsync();
 
-            await GUIOutput("Hi, I'm Lawrence. How can I help you?", true);
+            await GUIOutput("Hi, I'm Alan. How can I help you?", true);
 
             // Set event handlers
             background_recognizer.ContinuousRecognitionSession.ResultGenerated += ContinuousRecognitionSession_ResultGenerated;
@@ -167,13 +164,13 @@ namespace VocalAssistant
 
             //Reset GUI script            
             if (state == AssistantState.BACKGROUND_LISTEN)
-                GUIOutput("Hi, I'm Lawrence. How can I help you?", false);
+                GUIOutput("Hi, I'm Alan. How can I help you?", false);
         }
 
         private void ContinuousRecognitionSession_ResultGenerated(SpeechContinuousRecognitionSession sender, SpeechContinuousRecognitionResultGeneratedEventArgs args)
         {
             // Execute tasks acoording to recognized speech
-            if (args.Result.Text == "hey lawrence")
+            if (args.Result.Text == "hey alan")
                 VocalAssistantFunctionality();
 
         }
@@ -216,7 +213,7 @@ namespace VocalAssistant
                 }
                 else
                 {
-                    await GUIOutput("I'm sorry, I'm afraid I can't do that.", true);
+                    await GUIOutput("I'm sorry, I couldn't understand.", true);
                 }
             }
 
@@ -232,7 +229,7 @@ namespace VocalAssistant
             if (command == "what time is it")
             {
                 var now = System.DateTime.Now;
-                await GUIOutput($"It's {now.Hour}:{now.Minute}.", true);
+                await GUIOutput("It's " + now.Hour.ToString("D2") + ":" + now.Minute.ToString("D2"), true);
 
                 state = AssistantState.BACKGROUND_LISTEN;
             }
@@ -258,9 +255,11 @@ namespace VocalAssistant
                 await GetInspiringQuote();
             else if (command == "open the stopwatch")
                 await OpenStopWatch();
+            else if (command == "find a recipe for me")
+                await FindRecipe();
             else
             {
-                await GUIOutput("I'm sorry, I'm afraid I can't do that.", true);
+                await GUIOutput("I'm sorry, I couldn't understand.", true);
 
                 state = AssistantState.BACKGROUND_LISTEN;
             }
@@ -270,12 +269,19 @@ namespace VocalAssistant
 
         private async Task TellJokes()
         {
-            var http = new HttpClient();
-            http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
-            var content = await http.GetAsync("https://icanhazdadjoke.com/");
-            var joke = await content.Content.ReadAsStringAsync();
+            try
+            {
+                var http = new HttpClient();
+                http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
+                var content = await http.GetAsync("https://icanhazdadjoke.com/");
+                var joke = await content.Content.ReadAsStringAsync();
 
-            await GUIOutput(joke, true);
+                await GUIOutput(joke, true);
+            }
+            catch
+            {
+                await GUIOutput("I'm sorry, I couldn't retrieve the informations from the web.", true);
+            }
 
             state = AssistantState.BACKGROUND_LISTEN;
         }
@@ -308,8 +314,6 @@ namespace VocalAssistant
 
         private async Task SongTaskList(string command)
         {
-            //TODO: scrivere il codice per controllare la riproduzione della canzone
-
             if (command == "close")
             {
                 player.Pause();
@@ -326,7 +330,7 @@ namespace VocalAssistant
             else if (command == "stop")
             {
                 if (player.CurrentState == MediaPlayerState.Paused)
-                    await GUIOutput("I'm sorry, but the music is already paused.", true);
+                    await GUIOutput("I'm sorry, the music player is already paused.", true);
                 else
                     player.Pause();
                 state = AssistantState.BACKGROUND_PLAYING_SONG;
@@ -334,7 +338,7 @@ namespace VocalAssistant
             else if (command == "play")
             {
                 if (player.CurrentState == MediaPlayerState.Playing)
-                    await GUIOutput("I'm sorry, but the music is already playing.", true);
+                    await GUIOutput("I'm sorry, the music player is already playing.", true);
                 else
                     player.Play();
                 state = AssistantState.BACKGROUND_PLAYING_SONG;
@@ -378,7 +382,7 @@ namespace VocalAssistant
             }
             else
             {
-                await GUIOutput("I'm sorry, I'm afraid I can't do that.", true);
+                await GUIOutput("I'm sorry, I couldn't understand.", true);
                 state = AssistantState.BACKGROUND_PLAYING_SONG;
             }
         }
@@ -449,7 +453,7 @@ namespace VocalAssistant
                 await GUIOutput("Remainder saved.", true);
             }
             else
-                await GUIOutput("Sorry, I couldn't complete the task.", true);
+                await GUIOutput("Sorry, I couldn't create the remainder.", true);
 
             state = AssistantState.BACKGROUND_LISTEN;
         }
@@ -554,19 +558,19 @@ namespace VocalAssistant
                 var http = new HttpClient();
 
                 string page_str, title;
-                int idx1, idx2;
+                int unvalid_seq, idx1, idx2;
                 do
                 {
                     var rand_page = await http.GetAsync("http://en.wikipedia.org/wiki/Special:Random");
                     page_str = await rand_page.Content.ReadAsStringAsync();
+                    unvalid_seq = page_str.IndexOf("\\u");
                     idx2 = page_str.IndexOf(" - Wikipedia");
-                } while (idx2 == -1);
+                } while (idx2 == -1 || unvalid_seq != -1);
 
                 idx1 = page_str.IndexOf("<title>") + "<title>".Length;
                 title = page_str.Substring(idx1, idx2 - idx1).Replace(' ', '_');
                 var response = await http.GetAsync("https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&exsentences=2&titles=" + title);
                 string result = await response.Content.ReadAsStringAsync();
-
                 idx1 = result.IndexOf("extract\":\"") + "extract\":\"".Length;
                 idx2 = result.IndexOf("\"}}}}");
                 string content = result.Substring(idx1, idx2 - idx1);
@@ -592,21 +596,15 @@ namespace VocalAssistant
                     content = content.Remove(idx1, 2);
                 }
 
-                while (content.IndexOf("~") != -1)
-                {
-                    idx1 = content.IndexOf("~");
-                    idx2 = content.IndexOf("\\u2014") + 6;
-                    content = content.Remove(idx1, idx2 - idx1);
-                }
-
-                content = content.Replace(" \\u2014", ",");
                 content = content.Replace("  ", " ");
+                content = content.Replace("   ", " ");
+                content = content.Replace("\\\"", "\"");
 
                 await GUIOutput(content, true);
             }
             catch
             {
-                await GUIOutput("I'm sorry, I wasn't able to find any information.", true);
+                await GUIOutput("I'm sorry, I couldn't retrieve the informations from the web.", true);
             }
             
 
@@ -622,7 +620,7 @@ namespace VocalAssistant
             }
             catch
             {
-                await GUIOutput("I'm sorry, I couldn't retrieve any quote.", true);
+                await GUIOutput("I'm sorry, I couldn't retrieve the informations from the web.", true);
             }
 
             state = AssistantState.BACKGROUND_LISTEN;
@@ -656,7 +654,7 @@ namespace VocalAssistant
             }
             catch
             {
-                await GUIOutput("I'm sorry, I was unable to retrieve weather informations.", true);
+                await GUIOutput("I'm sorry, I couldn't retrieve the informations from the web.", true);
             }
 
             state = AssistantState.BACKGROUND_LISTEN;
@@ -682,6 +680,68 @@ namespace VocalAssistant
                                         });
 
             state = AssistantState.BACKGROUND_LISTEN;
+        }
+
+        private async Task FindRecipe()
+        {
+            await GUIOutput("What do you want to cook?", true);
+            SpeechRecognitionResult food = await task_recognizer.RecognizeAsync();
+
+            await GUIOutput("Searching a recipe for " + food.Text, false);
+
+            try
+            {
+                //Get recipe from web
+                var http = new HttpClient();
+                var obj = await http.GetAsync("https://api.edamam.com/search?q=" + food.Text + "&app_id=b4a3fd65&app_key=64c81e2e1ae114c948f814fc9c31041f&from=0&to=1");
+                string str = await obj.Content.ReadAsStringAsync();
+                int start = str.IndexOf("\"ingredientLines\" : [ \"") + "\"ingredientLines\" : [ \"".Length;
+                int end = str.IndexOf("\"ingredients\"") - 11;
+                string ingredients = str.Substring(start, end - start);
+                ingredients = ingredients.Replace("\", \"", ";");
+                var ingredients_list = ingredients.Split(';');
+
+                start = str.IndexOf("\"label\" : \"") + "\"label\" : \"".Length;
+                end = str.IndexOf("\"image\"") - 9;
+                string recipe_name = str.Substring(start, end - start);
+
+                start = str.IndexOf("\"image\" : \"") + "\"image\" : \"".Length;
+                end = str.IndexOf("\"source\"") - 9;
+                string recipe_image = str.Substring(start, end - start);
+
+                //Switch grid
+                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            this_main_page.SwitchToRecipes();
+                                            this_main_page.SetRecipeName(recipe_name);
+                                            this_main_page.SetRecipeImg(recipe_image);
+                                            this_main_page.SetIngredients(ingredients_list);
+                                        });
+
+                //Wait until the user click the exit button
+                remain_in_recipe_view = true;
+                while (remain_in_recipe_view);
+
+                //Switch back to default grid
+                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            this_main_page.SwitchToDefault();
+                                        });
+            }
+            catch
+            {
+                await GUIOutput("I'm sorry, I couldn't retrieve the informations from the web.", true);
+            }
+
+            state = AssistantState.BACKGROUND_LISTEN;
+        }
+
+        //Return to default grid from repice function
+        public void RecipeReturnToDefault()
+        {
+            remain_in_recipe_view = false;
         }
 
         //Slider volume control function
@@ -767,30 +827,17 @@ namespace VocalAssistant
             return result;
         }
 
-        /// <summary>
-        /// Richiamato quando l'applicazione viene avviata normalmente dall'utente. All'avvio dell'applicazione
-        /// verranno usati altri punti di ingresso per aprire un file specifico.
-        /// </summary>
-        /// <param name="e">Dettagli sulla richiesta e sul processo di avvio.</param>
+
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
             Frame rootFrame = Window.Current.Content as Frame;
 
-            // Non ripetere l'inizializzazione dell'applicazione se la finestra già dispone di contenuto,
-            // assicurarsi solo che la finestra sia attiva
             if (rootFrame == null)
             {
-                // Creare un frame che agisca da contesto di navigazione e passare alla prima pagina
                 rootFrame = new Frame();
 
                 rootFrame.NavigationFailed += OnNavigationFailed;
 
-                if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
-                {
-                    //TODO: caricare lo stato dall'applicazione sospesa in precedenza
-                }
-
-                // Posizionare il frame nella finestra corrente
                 Window.Current.Content = rootFrame;
             }
 
@@ -798,12 +845,8 @@ namespace VocalAssistant
             {
                 if (rootFrame.Content == null)
                 {
-                    // Quando lo stack di esplorazione non viene ripristinato, passare alla prima pagina
-                    // e configurare la nuova pagina passando le informazioni richieste come parametro
-                    // parametro
                     rootFrame.Navigate(typeof(MainPage), e.Arguments);
                 }
-                // Assicurarsi che la finestra corrente sia attiva
                 Window.Current.Activate();
 
                 //Get Main page
@@ -811,27 +854,14 @@ namespace VocalAssistant
             }
         }
 
-        /// <summary>
-        /// Chiamato quando la navigazione a una determinata pagina ha esito negativo
-        /// </summary>
-        /// <param name="sender">Frame la cui navigazione non è riuscita</param>
-        /// <param name="e">Dettagli sull'errore di navigazione.</param>
         void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
             throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
 
-        /// <summary>
-        /// Richiamato quando l'esecuzione dell'applicazione viene sospesa. Lo stato dell'applicazione viene salvato
-        /// senza che sia noto se l'applicazione verrà terminata o ripresa con il contenuto
-        /// della memoria ancora integro.
-        /// </summary>
-        /// <param name="sender">Origine della richiesta di sospensione.</param>
-        /// <param name="e">Dettagli relativi alla richiesta di sospensione.</param>
         private void OnSuspending(object sender, SuspendingEventArgs e)
         {
             var deferral = e.SuspendingOperation.GetDeferral();
-            //TODO: salvare lo stato dell'applicazione e arrestare eventuali attività eseguite in background
             deferral.Complete();
         }
     }

@@ -48,19 +48,28 @@
             <TextBlock x:Name="playerOutputTitle" HorizontalAlignment="Center" Margin="0,240,0,0" Text="Title" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="25" FontWeight="Bold" TextAlignment="Left"/>
             <TextBlock x:Name="playerOutputArtist" HorizontalAlignment="Center" Margin="0,288,0,0" Text="Artist" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="20" FontWeight="Normal" TextAlignment="Right"/>
             <Image x:Name="playerLogo" HorizontalAlignment="Center" Height="220" Margin="0,20,0,0" VerticalAlignment="Top" Width="300"/>
-            <AppBarButton x:Name="pause" Icon="Pause" HorizontalAlignment="Left" Margin="312,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="pause_Click" Width="54" Height="49"/>
-            <AppBarButton x:Name="play" Icon="Play" HorizontalAlignment="Left" Margin="385,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="play_Click" Width="54" Height="49"/>
-            <AppBarButton x:Name="stop" Icon="Cancel" HorizontalAlignment="Left" Margin="243,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="stop_Click" Height="49" Width="53"/>
-            <AppBarButton x:Name="previous" Icon="Previous" HorizontalAlignment="Left" Margin="172,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="previous_Click" Width="54" Height="49"/>
-            <AppBarButton x:Name="next" Icon="Next" HorizontalAlignment="Left" Margin="455,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="next_Click" Width="54" Height="49"/>
+            <AppBarButton x:Name="pause" Icon="Pause" Label="Stop" HorizontalAlignment="Left" Margin="312,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="pause_Click" Width="54" Height="61"/>
+            <AppBarButton x:Name="play" Icon="Play" Label="Play" HorizontalAlignment="Left" Margin="385,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="play_Click" Width="54" Height="61"/>
+            <AppBarButton x:Name="stop" Icon="Cancel" Label="Close" HorizontalAlignment="Left" Margin="243,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="stop_Click" Height="61" Width="54"/>
+            <AppBarButton x:Name="previous" Icon="Previous" Label="Previous" HorizontalAlignment="Left" Margin="172,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="previous_Click" Width="54" Height="61"/>
+            <AppBarButton x:Name="next" Icon="Next" Label="Next" HorizontalAlignment="Left" Margin="455,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="next_Click" Width="54" Height="61"/>
             <Slider x:Name="volume" HorizontalAlignment="Left" Margin="530,345,0,0" VerticalAlignment="Top" Width="130" Height="44" Background="White" ValueChanged="slider_ValueChanged"/>
         </Grid>
 
         <Grid x:Name="stopWatchGrid" Visibility="Collapsed">
             <TextBlock x:Name="textSW" HorizontalAlignment="Center" Margin="0,140,0,0" Text="00:00:00" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="50"/>
-            <Button x:Name="resetSW" Content="Reset" HorizontalAlignment="Left" Margin="487,322,0,0" VerticalAlignment="Top" Foreground="#192936" Background="White" Click="resetSW_Click"/>
-            <Button x:Name="stopSW" Content="Stop" HorizontalAlignment="Center" Margin="0,322,0,0" VerticalAlignment="Top" Foreground="#192936" Background="White" Click="stopSW_Click"/>
-            <Button x:Name="playSW" Content="Start" HorizontalAlignment="Left" Margin="271,322,0,0" VerticalAlignment="Top" Foreground="#192936" Background="White" Click="playSW_Click"/>
+            <AppBarButton x:Name="resetSW" Content="Reset" BorderBrush="White" BorderThickness="1"  Margin="494,322,0,0" Foreground="White" Click="resetSW_Click" Height="49" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <AppBarButton x:Name="stopSW" Content="Stop" BorderBrush="White" BorderThickness="1"  Foreground="White" Click="stopSW_Click" Height="49" HorizontalAlignment="Center" Margin="0,321,0,0" VerticalAlignment="Top"/>
+            <AppBarButton x:Name="playSW" Content="Start" BorderBrush="White" BorderThickness="1"  Margin="238,322,0,0" Foreground="White" Click="playSW_Click" Height="49" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        </Grid>
+
+        <Grid x:Name="recipesGrid" Visibility="Collapsed">
+            <TextBlock x:Name="recipeName" Text="Prova" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="30" Foreground="White" FontWeight="Bold" Margin="44,26,404,275"/>
+            <Image x:Name="recipePhoto" Width="200" Height="200" Margin="474,26,126,254"/>
+            <ScrollViewer Height="212" Margin="44,268,83,0" VerticalAlignment="Top">
+                <TextBlock x:Name="ingredients" Margin="0,0,0,0" HorizontalAlignment="Stretch" FontSize="20" Foreground="White" VerticalAlignment="Stretch"/>
+            </ScrollViewer>
+            <AppBarButton x:Name="exitRecipes" Icon="Cancel"  HorizontalAlignment="Left" Margin="722,423,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Height="47" Click="exitRecipes_Click"/>
         </Grid>
 
     </Grid>

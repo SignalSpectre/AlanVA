@@ -72,6 +72,7 @@ namespace VocalAssistant
             weatherGrid.Visibility = Visibility.Visible;
             musicPlayerGrid.Visibility = Visibility.Collapsed;
             stopWatchGrid.Visibility = Visibility.Collapsed;
+            recipesGrid.Visibility = Visibility.Collapsed;
         }
 
         public void SwitchToDefault()
@@ -80,6 +81,12 @@ namespace VocalAssistant
             weatherGrid.Visibility = Visibility.Collapsed;
             musicPlayerGrid.Visibility = Visibility.Collapsed;
             stopWatchGrid.Visibility = Visibility.Collapsed;
+            recipesGrid.Visibility = Visibility.Collapsed;
+
+            clockSW.Stop();
+            stopwatchCount = 0;
+            textSW.Text = "00:00:00";
+            output.Text = "Hi, I'm Alan. How can I help you?";
         }
 
         public void SwitchToPlayer()
@@ -88,6 +95,7 @@ namespace VocalAssistant
             weatherGrid.Visibility = Visibility.Collapsed;
             musicPlayerGrid.Visibility = Visibility.Visible;
             stopWatchGrid.Visibility = Visibility.Collapsed;
+            recipesGrid.Visibility = Visibility.Collapsed;
         }
 
         public void SwitchToStopWatch()
@@ -96,6 +104,16 @@ namespace VocalAssistant
             weatherGrid.Visibility = Visibility.Collapsed;
             musicPlayerGrid.Visibility = Visibility.Collapsed;
             stopWatchGrid.Visibility = Visibility.Visible;
+            recipesGrid.Visibility = Visibility.Collapsed;
+        }
+
+        public void SwitchToRecipes()
+        {
+            defaultGrid.Visibility = Visibility.Collapsed;
+            weatherGrid.Visibility = Visibility.Collapsed;
+            musicPlayerGrid.Visibility = Visibility.Collapsed;
+            stopWatchGrid.Visibility = Visibility.Collapsed;
+            recipesGrid.Visibility = Visibility.Visible;
         }
 
         public void WeatherOut(RootObject weather)
@@ -118,6 +136,22 @@ namespace VocalAssistant
         {
             playerOutputTitle.Text = title;
             playerOutputArtist.Text = artist;
+        }
+
+        public void SetRecipeName(string name)
+        {
+            recipeName.Text = name;
+        }
+
+        public void SetRecipeImg(string url)
+        {
+            recipePhoto.Source = new BitmapImage(new Uri(url, UriKind.Absolute));
+        }
+
+        public void SetIngredients(string[] ingrs)
+        {
+            foreach(string ing in ingrs)
+                ingredients.Text += "\u2022 " + ing + "\n";
         }
 
         private void previous_Click(object sender, RoutedEventArgs e)
@@ -180,6 +214,11 @@ namespace VocalAssistant
             clockSW.Stop();
             stopwatchCount = 0;
             textSW.Text = "00:00:00";
+        }
+
+        private void exitRecipes_Click(object sender, RoutedEventArgs e)
+        {
+            ((App)(Application.Current)).RecipeReturnToDefault();
         }
     }
 }
