@@ -7,275 +7,216 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using Windows.Media.SpeechRecognition;
-using Windows.Storage;
+using AssistantSpeechSynthesis;
 using Windows.Media.Playback;
 using System.Threading.Tasks;
-using AssistantSpeechSynthesis;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Windows.Storage;
+
 
 namespace VocalAssistant
 {
-    public struct Remainder
+    public struct Reminder
     {
         public int day;
         public int month;
-        public string details;
+        public string content;
     }
 
-    enum AssistantState { BACKGROUND_LISTEN, LISTENING, BACKGROUND_PLAYING_SONG, LISTENING_PLAYING_SONG, BACKGROUND_STOPWATCH, LISTENING_STOPWATCH };
+    enum AssistantState { BACKGROUND_DEFAULT, LISTENING_DEFAULT, BACKGROUND_MEDIA_PLAYER, LISTENING_MEDIA_PLAYER, BACKGROUND_STOPWATCH, LISTENING_STOPWATCH };
 
     sealed partial class App : Application
     {
-        private static MainPage this_main_page;
-
-        private SpeechRecognizer background_recognizer;
-        private SpeechRecognizer task_recognizer;
+        private static MainPage main_page;
+        private AssistantState state = AssistantState.BACKGROUND_DEFAULT;
+        private SpeechRecognizer background_recognizer, task_recognizer;
         private SpeechService speaker;
-
-        private MediaPlayer player;
-        private double player_volume;
-        private AssistantState state = AssistantState.BACKGROUND_LISTEN;
-        private List<string> songList = new List<string>();
-        private int songIndex;
-        private List<Remainder> remainders = new List<Remainder>();
-        private bool remain_in_recipe_view = false;
+        private MediaPlayer media_player;
+        private List<Reminder> reminders = new List<Reminder>();
+        private List<string> songs_list = new List<string>();
+        private bool in_recipe_view = false;
+        private double media_player_volume;
+        private int song_idx;
 
 
         public App()
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
-
             AssistantSetup();
         }
 
-        //Assistant initialization function
         private async Task AssistantSetup()
         {
-            // Initialize SpeechRecognizer object
+            // Initialize recognizers (speech-to-text) and speaker (text-to-speech)
             Windows.Globalization.Language language = new Windows.Globalization.Language("en-US");
             background_recognizer = new SpeechRecognizer(language);
             task_recognizer = new SpeechRecognizer(language);
+            speaker = new SpeechService("Male", "en-US");
 
             task_recognizer.Timeouts.InitialSilenceTimeout = TimeSpan.FromSeconds(10);
             task_recognizer.Timeouts.EndSilenceTimeout = TimeSpan.FromSeconds(5);
 
             // Initialize media player
-            player = BackgroundMediaPlayer.Current;
+            media_player = BackgroundMediaPlayer.Current;
+            await CreateSongsList();
 
-            //Create song list
-            await CreateSongList();
-
-            // Initialize SpeechSynthesizer object
-            speaker = new SpeechService("Male", "en-US");
-
-            // Compile grammar
-            SpeechRecognitionCompilationResult backup_compilation_result = await background_recognizer.CompileConstraintsAsync();
+            // Compile recognizer's grammar
+            SpeechRecognitionCompilationResult background_compilation_result = await background_recognizer.CompileConstraintsAsync();
             SpeechRecognitionCompilationResult task_compilation_result = await task_recognizer.CompileConstraintsAsync();
 
-            // If compilation successful, start continuous recognition session
-            if (backup_compilation_result.Status == SpeechRecognitionResultStatus.Success)
+            // If compilation has been successful, start continuous recognition session
+            if(background_compilation_result.Status == SpeechRecognitionResultStatus.Success)
                 await background_recognizer.ContinuousRecognitionSession.StartAsync();
 
             await GUIOutput("Hi, I'm Alan. How can I help you?", true);
 
             // Set event handlers
-            background_recognizer.ContinuousRecognitionSession.ResultGenerated += ContinuousRecognitionSession_ResultGenerated;
-            background_recognizer.StateChanged += background_recognizer_StateChanged;
-            player.MediaEnded += player_MediaEnded;
-            player.CurrentStateChanged += player_CurrentStateChanged;
+            background_recognizer.ContinuousRecognitionSession.ResultGenerated += ContinuousRecognitionSessionResultGenerated;
+            background_recognizer.StateChanged += BackgroundRecognizerStateChanged;
+            media_player.MediaEnded += MediaPlayerMediaEnded;
+            media_player.CurrentStateChanged += MediaPlayerCurrentStateChanged;
         }
 
-        //Print function
+        // Vocal and visual output handling
         private async Task GUIOutput(string text, bool has_to_speak)
         {
             await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                                         () =>
                                         {
-                                            this_main_page.Output(text);
+                                            main_page.PrintText(text);
                                         });
-
             if(has_to_speak)
                 await speaker.SayAsync(text);
         }
 
-        //Player volume control function
-        private async Task PlayerVolumeSet(double value)
+        private void BackgroundRecognizerStateChanged(SpeechRecognizer sender, SpeechRecognizerStateChangedEventArgs args)
         {
-            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                                        () =>
-                                        {
-                                            this_main_page.SetVolumeSliderValue(value);
-                                        });
-        }
-
-        //Player text control function
-        private async Task PlayerTextSet(string title, string artist)
-        {
-            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                                        () =>
-                                        {
-                                            this_main_page.SetMediaPlayerText(title, artist);
-                                        });
-        }
-
-        private void player_MediaEnded(MediaPlayer sender, object args)
-        {
-            SetMediaPlayerNext();
-        }
-
-        private void player_CurrentStateChanged(MediaPlayer sender, object args)
-        {
-            if (player.CurrentState == MediaPlayerState.Playing)
-            {
-                PlayerTextSet(ExtractMetadata(songIndex).Key, ExtractMetadata(songIndex).Value);
-            }
-            else if (player.CurrentState == MediaPlayerState.Paused)
-                PlayerTextSet("Paused", "");
-            else if (player.CurrentState == MediaPlayerState.Buffering)
-                PlayerTextSet("Loading media", "");
-        }
-
-        private void background_recognizer_StateChanged(SpeechRecognizer sender, SpeechRecognizerStateChangedEventArgs args)
-        {
-            if (args.State.ToString() == "Idle" && (state == AssistantState.BACKGROUND_LISTEN || state == AssistantState.BACKGROUND_PLAYING_SONG || state == AssistantState.BACKGROUND_STOPWATCH))
+            // Wakes up the background recognizer when it goes idle
+            if (args.State.ToString() == "Idle" && (state == AssistantState.BACKGROUND_DEFAULT ||
+                                                   state == AssistantState.BACKGROUND_MEDIA_PLAYER ||
+                                                   state == AssistantState.BACKGROUND_STOPWATCH))
                 background_recognizer.ContinuousRecognitionSession.StartAsync();
 
-            //Change logo image
-            if(state == AssistantState.BACKGROUND_LISTEN || state == AssistantState.BACKGROUND_PLAYING_SONG)
+            // Switch from animated logo to static logo and vice versa
+            if(state == AssistantState.BACKGROUND_DEFAULT || state == AssistantState.BACKGROUND_MEDIA_PLAYER)
             {
-                //Set image to static
                 Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                                         () =>
                                         {
-                                            this_main_page.StaticLogo();
+                                            main_page.SetStaticLogo();
                                         });
             }
             else
             {
-                //Set image to animated
                 Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                                         () =>
                                         {
-                                            this_main_page.AnimatedLogo();
+                                            main_page.SetAnimatedLogo();
                                         });
             }
 
-            //Reset GUI script            
-            if (state == AssistantState.BACKGROUND_LISTEN)
+            // Reset GUI            
+            if(state == AssistantState.BACKGROUND_DEFAULT)
                 GUIOutput("Hi, I'm Alan. How can I help you?", false);
         }
 
-        private void ContinuousRecognitionSession_ResultGenerated(SpeechContinuousRecognitionSession sender, SpeechContinuousRecognitionResultGeneratedEventArgs args)
+        private void ContinuousRecognitionSessionResultGenerated(SpeechContinuousRecognitionSession sender, SpeechContinuousRecognitionResultGeneratedEventArgs args)
         {
-            // Execute tasks acoording to recognized speech
-            if (args.Result.Text == "hey alan")
-                VocalAssistantFunctionality();
-
+            // Execute task according to the recognized speech
+            if(args.Result.Text == "hey alan")
+                TaskSelection();
         }
 
-        private async Task VocalAssistantFunctionality()
+        private async Task TaskSelection()
         {
-            //Change assistant state
-            if (state == AssistantState.BACKGROUND_LISTEN)
-                state = AssistantState.LISTENING;
-            else if (state == AssistantState.BACKGROUND_PLAYING_SONG)
+            if(state == AssistantState.BACKGROUND_DEFAULT)
+                state = AssistantState.LISTENING_DEFAULT;
+            else if(state == AssistantState.BACKGROUND_MEDIA_PLAYER)
             {
-                state = AssistantState.LISTENING_PLAYING_SONG;
-                player_volume = player.Volume;
-                PlayerVolumeSet(10.0);
+                state = AssistantState.LISTENING_MEDIA_PLAYER;
+                media_player_volume = media_player.Volume;
+                ChangeMediaPlayerVolume(10.0);
             }
-            else if (state == AssistantState.BACKGROUND_STOPWATCH)
+            else if(state == AssistantState.BACKGROUND_STOPWATCH)
                 state = AssistantState.LISTENING_STOPWATCH;
 
-            // Stop continuous recognition session
+            // Stop continuous recognition session and wait for user's command
             await background_recognizer.ContinuousRecognitionSession.StopAsync();
-
             await GUIOutput("I'm listening.", true);
-
-            //listen for user command
             SpeechRecognitionResult command = await task_recognizer.RecognizeAsync();
 
-            //select task list by state
-            if (state == AssistantState.LISTENING)
-                await NormalTaskList(command.Text);
-            else if (state == AssistantState.LISTENING_PLAYING_SONG)
-            {
-                await SongTaskList(command.Text);
-                //player.Volume = player_volume;
-            }
-            else if (state == AssistantState.LISTENING_STOPWATCH)
+            // The list of possible tasks changes according to the state
+            if(state == AssistantState.LISTENING_DEFAULT)
+                await StandardTasksList(command.Text);
+            else if(state == AssistantState.LISTENING_MEDIA_PLAYER)
+                await MediaPlayerTasksList(command.Text);
+            else if(state == AssistantState.LISTENING_STOPWATCH)
             {
                 if(command.Text == "close")
-                {
-                    CloseStopWatch();
-                }
+                    CloseStopwatch();
                 else
                 {
                     await GUIOutput("I'm sorry, I couldn't understand.", true);
+                    state = AssistantState.BACKGROUND_STOPWATCH;
                 }
             }
 
-            //Restart continuos recognition session
+            // Restart continuous recognition session
             await background_recognizer.ContinuousRecognitionSession.StartAsync();
-
             return;
         }
 
-        private async Task NormalTaskList(string command)
+        private async Task StandardTasksList(string command)
         {
-            //Select functionality by command
-            if (command == "what time is it")
+            if(command == "what time is it")
             {
                 var now = System.DateTime.Now;
                 await GUIOutput("It's " + now.Hour.ToString("D2") + ":" + now.Minute.ToString("D2"), true);
-
-                state = AssistantState.BACKGROUND_LISTEN;
+                state = AssistantState.BACKGROUND_DEFAULT;
             }
-            else if (command == "what day is today")
+            else if(command == "what day is today")
             {
                 await GUIOutput(System.DateTime.Today.ToString("D"), true);
-
-                state = AssistantState.BACKGROUND_LISTEN;
+                state = AssistantState.BACKGROUND_DEFAULT;
             }
-            else if (command == "tell me a joke")
-                await TellJokes();
-            else if (command == "play some music")
+            else if(command == "tell me a joke")
+                await TellJoke();
+            else if(command == "play some music")
                 await PlayMusic();
-            else if (command == "take a reminder" || command == "make a reminder")
-                await MakeRemainder();
-            else if (command == "any plans for today" || command == "any plans today")
-                await SearchRemainder();
-            else if (command == "tell me something interesting")
-                await RandomOnWiki();
-            else if (command == "what's the weather like today" || command == "how's the weather today")
-                await GetWeatherInfo();
-            else if (command == "inspire me")
+            else if(command == "save a reminder")
+                await SaveReminder();
+            else if(command == "any plans for today")
+                await SearchReminder();
+            else if(command == "tell me something interesting")
+                await RandomWikiArticle();
+            else if(command == "what's the weather like today" || command == "how's the weather today")
+                await GetWeatherInfos();
+            else if(command == "inspire me")
                 await GetInspiringQuote();
-            else if (command == "open the stopwatch")
-                await OpenStopWatch();
-            else if (command == "find a recipe for me")
-                await FindRecipe();
+            else if(command == "open the stopwatch")
+                await OpenStopwatch();
+            else if(command == "search a recipe")
+                await SearchRecipe();
             else
             {
                 await GUIOutput("I'm sorry, I couldn't understand.", true);
-
-                state = AssistantState.BACKGROUND_LISTEN;
+                state = AssistantState.BACKGROUND_DEFAULT;
             }
 
             return;
         }
 
-        private async Task TellJokes()
+
+        private async Task TellJoke()
         {
             try
             {
                 var http = new HttpClient();
                 http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
-                var content = await http.GetAsync("https://icanhazdadjoke.com/");
-                var joke = await content.Content.ReadAsStringAsync();
-
+                var response = await http.GetAsync("https://icanhazdadjoke.com/");
+                string joke = await response.Content.ReadAsStringAsync();
                 await GUIOutput(joke, true);
             }
             catch
@@ -283,302 +224,399 @@ namespace VocalAssistant
                 await GUIOutput("I'm sorry, I couldn't retrieve the informations from the web.", true);
             }
 
-            state = AssistantState.BACKGROUND_LISTEN;
+            state = AssistantState.BACKGROUND_DEFAULT;
         }
+
 
         private async Task PlayMusic()
         {
-            //Read the media file
-            StorageFile song = await Package.Current.InstalledLocation.GetFileAsync(@"Music\" + songList[songIndex]);
+            StorageFile song = await Package.Current.InstalledLocation.GetFileAsync(@"Music\" + songs_list[song_idx]);
 
-
-            //Switch the main page grid to music player
-            if (state == AssistantState.LISTENING)
+            // Switch from default grid to media player grid
+            if(state == AssistantState.LISTENING_DEFAULT)
             {
                 await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                                          () =>
                                          {
-                                             this_main_page.SwitchToPlayer();
+                                             main_page.SwitchToMediaPlayerGrid();
                                          });
             }
 
-            await PlayerVolumeSet(0.35 * 100);
-
-            //Play it
-            player.AutoPlay = true;
-            player.SetFileSource(song);
-
-            //Change the state of the assistant
-            state = AssistantState.BACKGROUND_PLAYING_SONG;
+            await ChangeMediaPlayerVolume(0.35 * 100);
+            media_player.AutoPlay = true;
+            media_player.SetFileSource(song);
+            state = AssistantState.BACKGROUND_MEDIA_PLAYER;
         }
 
-        private async Task SongTaskList(string command)
+        private async Task MediaPlayerTasksList(string command)
         {
-            if (command == "close")
+            if(command == "close")
             {
-                player.Pause();
-                songIndex = 0;
-
+                media_player.Pause();
+                song_idx = 0;
                 await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                                        () =>
                                        {
-                                           this_main_page.SwitchToDefault();
+                                           main_page.SwitchToDefaultGrid();
                                        });
 
-                state = AssistantState.BACKGROUND_LISTEN;
+                state = AssistantState.BACKGROUND_DEFAULT;
             }
-            else if (command == "stop")
+            else if(command == "stop")
             {
-                if (player.CurrentState == MediaPlayerState.Paused)
-                    await GUIOutput("I'm sorry, the music player is already paused.", true);
+                if(media_player.CurrentState == MediaPlayerState.Paused)
+                    await GUIOutput("The music has already been stopped.", true);
                 else
-                    player.Pause();
-                state = AssistantState.BACKGROUND_PLAYING_SONG;
+                    media_player.Pause();
+                state = AssistantState.BACKGROUND_MEDIA_PLAYER;
             }
-            else if (command == "play")
+            else if(command == "play")
             {
-                if (player.CurrentState == MediaPlayerState.Playing)
-                    await GUIOutput("I'm sorry, the music player is already playing.", true);
+                if(media_player.CurrentState == MediaPlayerState.Playing)
+                    await GUIOutput("The music is already playing.", true);
                 else
-                    player.Play();
-                state = AssistantState.BACKGROUND_PLAYING_SONG;
+                    media_player.Play();
+                state = AssistantState.BACKGROUND_MEDIA_PLAYER;
             }
-            else if (command == "volume up")
+            else if(command == "volume up")
             {
-                if (player_volume <= 0.8)
+                if(media_player_volume <= 0.8)
                 {
-                    player_volume += 0.2;
-                    PlayerVolumeSet(player_volume * 100);
+                    media_player_volume += 0.2;
+                    ChangeMediaPlayerVolume(media_player_volume * 100);
                 }
-                    
-                state = AssistantState.BACKGROUND_PLAYING_SONG;
+
+                state = AssistantState.BACKGROUND_MEDIA_PLAYER;
             }
-            else if (command == "volume down")
+            else if(command == "volume down")
             {
-                if (player_volume >= 0.2)
+                if(media_player_volume >= 0.2)
                 {
-                    player_volume -= 0.2;
-                    PlayerVolumeSet(player_volume * 100);
+                    media_player_volume -= 0.2;
+                    ChangeMediaPlayerVolume(media_player_volume * 100);
                 }
-                state = AssistantState.BACKGROUND_PLAYING_SONG;
+                state = AssistantState.BACKGROUND_MEDIA_PLAYER;
             }
-            else if (command == "next")
+            else if(command == "next song")
             {
-                player.Pause();
-                if (songIndex + 1 >= songList.Count)
-                    songIndex = 0;
+                media_player.Pause();
+                if(song_idx + 1 >= songs_list.Count)
+                    song_idx = 0;
                 else
-                    songIndex++;
+                    song_idx++;
                 await PlayMusic();
             }
-            else if (command == "previous")
+            else if(command == "previous song")
             {
-                player.Pause();
-                if (songIndex - 1 < 0)
-                    songIndex = songList.Count - 1;
+                media_player.Pause();
+                if(song_idx - 1 < 0)
+                    song_idx = songs_list.Count - 1;
                 else
-                    songIndex--;
+                    song_idx--;
                 await PlayMusic();
             }
             else
             {
                 await GUIOutput("I'm sorry, I couldn't understand.", true);
-                state = AssistantState.BACKGROUND_PLAYING_SONG;
+                state = AssistantState.BACKGROUND_MEDIA_PLAYER;
             }
         }
 
-        private async Task MakeRemainder()
-        {
-            SpeechRecognizer remainder_recon = new SpeechRecognizer(new Windows.Globalization.Language("en-US"));
-            StorageFile date_grammar = await Package.Current.InstalledLocation.GetFileAsync(@"remainder_rules.xml");
-
-            SpeechRecognitionGrammarFileConstraint date_constraint = new SpeechRecognitionGrammarFileConstraint(date_grammar);
-            remainder_recon.Constraints.Add(date_constraint);
-
-            var compilation_status = await remainder_recon.CompileConstraintsAsync();
-
-            await GUIOutput("For which day?", true);
-
-            SpeechRecognitionResult date;
-            SpeechRecognitionResult details;
-            bool finished = false;
-            do
-            {
-                date = await remainder_recon.RecognizeAsync();
-                if (date.Text.Length == 0)
-                    await GUIOutput("Please, repeat what you said.", true);
-                else
-                {
-                    await GUIOutput($"You said: {date.Text}. Is it correct?", true);
-                    SpeechRecognitionResult ack = await task_recognizer.RecognizeAsync();
-                    if (ack.Text == "yes")
-                        finished = true;
-                    else
-                        await GUIOutput("Please, repeat the date.", true);
-                }
-            } while (!finished);
-
-            await GUIOutput("What should I remember?", true);
-            finished = false;
-            int cnt = 0;
-            do
-            {
-                details = await task_recognizer.RecognizeAsync();
-                if (details.Text.Length == 0)
-                {
-                    cnt++;
-                    if (cnt < 3)
-                        await GUIOutput("Please, repeat what you said.", true);
-                }
-                else
-                {
-                    await GUIOutput($"You said: {details.Text}. Is it correct?", true);
-                    SpeechRecognitionResult ack = await task_recognizer.RecognizeAsync();
-                    if (ack.Text == "yes")
-                        finished = true;
-                    else
-                    {
-                        cnt++;
-                        if (cnt < 3)
-                            await GUIOutput("Please, repeat the remainder.", true);
-                    }
-                }
-            } while (!finished && cnt < 3);
-
-            if (cnt < 3)
-            {
-                //add the reaminder to the list
-                remainders.Add(CreateRemainder(date.Text, details.Text));
-
-                await GUIOutput("Remainder saved.", true);
-            }
-            else
-                await GUIOutput("Sorry, I couldn't create the remainder.", true);
-
-            state = AssistantState.BACKGROUND_LISTEN;
-        }
-
-        private Remainder CreateRemainder(string date, string details)
-        {
-            string day, month;
-            Remainder output;
-
-            day = date.Split(' ')[1];
-            month = date.Split(' ')[0];
-
-            int.TryParse(day, out output.day);
-
-            switch (month)
-            {
-                case "january":
-                    output.month = 1;
-                    break;
-                case "february":
-                    output.month = 2;
-                    break;
-                case "march":
-                    output.month = 3;
-                    break;
-                case "april":
-                    output.month = 4;
-                    break;
-                case "may":
-                    output.month = 5;
-                    break;
-                case "june":
-                    output.month = 6;
-                    break;
-                case "july":
-                    output.month = 7;
-                    break;
-                case "august":
-                    output.month = 8;
-                    break;
-                case "september":
-                    output.month = 9;
-                    break;
-                case "october":
-                    output.month = 10;
-                    break;
-                case "november":
-                    output.month = 11;
-                    break;
-                case "december":
-                    output.month = 12;
-                    break;
-                default:
-                    output.month = 0;
-                    break;
-            }
-
-            output.details = details;
-
-            return output;
-        }
-
-        private async Task SearchRemainder()
-        {
-            var now = System.DateTime.Now;
-            int rem = 0;
-
-            for (int i = 0; i < remainders.Count; i++)
-            {
-                if (remainders[i].month == now.Month && remainders[i].day == now.Day)
-                {
-                    rem++;
-                    await GUIOutput($"Remainder {rem}: {remainders[i].details}.", true);
-                }
-            }
-
-            if (rem == 0)
-                await GUIOutput("You have no remainders for today.", true);
-
-            state = AssistantState.BACKGROUND_LISTEN;
-        }
-
-        private async Task CreateSongList()
+        private async Task CreateSongsList()
         {
             StorageFolder installed_location = Package.Current.InstalledLocation;
             StorageFolder music_folder = await installed_location.GetFolderAsync(@"Music\");
             IReadOnlyList<StorageFile> files = await music_folder.GetFilesAsync();
 
-            foreach (StorageFile file in files)
-            {
-                if (file.Name.Contains(".wma") || file.Name.Contains(".mp3"))
-                    songList.Add(file.Name);
-            }
-
-            songIndex = 0;
+            foreach(StorageFile file in files)
+                if(file.Name.Contains(".wma") || file.Name.Contains(".mp3"))
+                    songs_list.Add(file.Name);
+            song_idx = 0;
         }
 
-        private async Task RandomOnWiki()
+        private KeyValuePair<string, string> GetSongInfos(int idx)
+        {
+            string title, artist, temp;
+            int i = songs_list[idx].LastIndexOf('.');
+            temp = songs_list[idx].Remove(i);
+            i = temp.LastIndexOf('-');
+
+            if(i > 0)
+            {
+                title = temp.Remove(i);
+                artist = temp.Remove(0, i + 1);
+            }
+            else
+            {
+                title = temp;
+                artist = "";
+            }
+
+            return new KeyValuePair<string, string>(title, artist);
+        }
+
+        private void MediaPlayerMediaEnded(MediaPlayer sender, object args) { NextSong(); }
+
+        // Slider volume control
+        public void SetMediaPlayerVolume(double value) { media_player.Volume = value / 100.0; }
+
+        // Media player Play button control
+        public void MediaPlayerPlay()
+        {
+            if(media_player.CurrentState != MediaPlayerState.Playing)
+                media_player.Play();
+        }
+
+        // Media player Close button control
+        public async Task MediaPlayerClose()
+        {
+            media_player.Pause();
+            song_idx = 0;
+
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                   () =>
+                                   {
+                                       main_page.SwitchToDefaultGrid();
+                                   });
+
+            state = AssistantState.BACKGROUND_DEFAULT;
+        }
+
+        // Media player Stop button control
+        public void MediaPlayerStop()
+        {
+            if(media_player.CurrentState == MediaPlayerState.Playing)
+                media_player.Pause();
+        }
+
+        // Media player Next button control
+        public async Task NextSong()
+        {
+            media_player.Pause();
+            if(song_idx + 1 >= songs_list.Count)
+                song_idx = 0;
+            else
+                song_idx++;
+            await PlayMusic();
+        }
+
+        // Media player Previous button control
+        public async Task PreviousSong()
+        {
+            media_player.Pause();
+            if(song_idx - 1 < 0)
+                song_idx = songs_list.Count - 1;
+            else
+                song_idx--;
+            await PlayMusic();
+        }
+
+        private void MediaPlayerCurrentStateChanged(MediaPlayer sender, object args)
+        {
+            if(media_player.CurrentState == MediaPlayerState.Playing)
+            {
+                KeyValuePair<string, string> song_infos = GetSongInfos(song_idx);
+                ChangeMediaPlayerText(song_infos.Key, song_infos.Value);
+            }
+            else if(media_player.CurrentState == MediaPlayerState.Paused)
+                ChangeMediaPlayerText("Stopped", "");
+            else if(media_player.CurrentState == MediaPlayerState.Buffering)
+                ChangeMediaPlayerText("Loading media", "");
+        }
+
+        // Media player volume control
+        private async Task ChangeMediaPlayerVolume(double value)
+        {
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            main_page.SetVolumeSliderValue(value);
+                                        });
+        }
+
+        // Media player text control
+        private async Task ChangeMediaPlayerText(string title, string artist)
+        {
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            main_page.SetMediaPlayerText(title, artist);
+                                        });
+        }
+
+
+        private async Task SaveReminder()
+        {
+            SpeechRecognizer reminder_recog = new SpeechRecognizer(new Windows.Globalization.Language("en-US"));
+            StorageFile reminder_grammar = await Package.Current.InstalledLocation.GetFileAsync(@"reminder_grammar.xml");
+            SpeechRecognitionGrammarFileConstraint date_rules = new SpeechRecognitionGrammarFileConstraint(reminder_grammar);
+            reminder_recog.Constraints.Add(date_rules);
+            var compilation_status = await reminder_recog.CompileConstraintsAsync();
+            SpeechRecognitionResult date, content;
+            bool done = false;
+            await GUIOutput("For which day?", true);
+
+            do
+            {
+                date = await reminder_recog.RecognizeAsync();
+                if(date.Text.Length == 0)
+                    await GUIOutput("Please, repeat what you said.", true);
+                else
+                {
+                    await GUIOutput($"You said: {date.Text}. Is it correct?", true);
+                    SpeechRecognitionResult ack = await task_recognizer.RecognizeAsync();
+                    if(ack.Text == "yes")
+                        done = true;
+                    else
+                        await GUIOutput("Please, repeat the date.", true);
+                }
+            } while(!done);
+
+            await GUIOutput("What should I remember?", true);
+            done = false;
+            int cnt = 0;
+
+            do
+            {
+                content = await task_recognizer.RecognizeAsync();
+                if(content.Text.Length == 0)
+                {
+                    cnt++;
+                    if(cnt < 3)
+                        await GUIOutput("Please, repeat what you said.", true);
+                }
+                else
+                {
+                    await GUIOutput($"You said: {content.Text}. Is it correct?", true);
+                    SpeechRecognitionResult ack = await task_recognizer.RecognizeAsync();
+                    if(ack.Text == "yes")
+                        done = true;
+                    else
+                    {
+                        cnt++;
+                        if(cnt < 3)
+                            await GUIOutput("Please, repeat the reminder.", true);
+                    }
+                }
+            } while(!done && cnt < 3);
+
+            if(cnt < 3)
+            {
+                // Create reminder
+                reminders.Add(CreateReminder(date.Text, content.Text));
+                await GUIOutput("Reminder saved.", true);
+            }
+            else
+                await GUIOutput("I'm sorry, I couldn't create the reminder.", true);
+
+            state = AssistantState.BACKGROUND_DEFAULT;
+        }
+
+        private Reminder CreateReminder(string date, string content)
+        {
+            string day, month;
+            Reminder rem;
+
+            day = date.Split(' ')[1];
+            month = date.Split(' ')[0];
+            int.TryParse(day, out rem.day); // String to integer conversion
+
+            switch(month)
+            {
+                case "january":
+                    rem.month = 1;
+                    break;
+                case "february":
+                    rem.month = 2;
+                    break;
+                case "march":
+                    rem.month = 3;
+                    break;
+                case "april":
+                    rem.month = 4;
+                    break;
+                case "may":
+                    rem.month = 5;
+                    break;
+                case "june":
+                    rem.month = 6;
+                    break;
+                case "july":
+                    rem.month = 7;
+                    break;
+                case "august":
+                    rem.month = 8;
+                    break;
+                case "september":
+                    rem.month = 9;
+                    break;
+                case "october":
+                    rem.month = 10;
+                    break;
+                case "november":
+                    rem.month = 11;
+                    break;
+                case "december":
+                    rem.month = 12;
+                    break;
+                default:
+                    rem.month = 0;
+                    break;
+            }
+
+            rem.content = content;
+            return rem;
+        }
+
+        private async Task SearchReminder()
+        {
+            var today = System.DateTime.Now;
+            int rem_count = 0;
+
+            for(int i = 0; i < reminders.Count; i++)
+            {
+                if(reminders[i].month == today.Month && reminders[i].day == today.Day)
+                {
+                    rem_count++;
+                    await GUIOutput($"Reminder {rem_count}: {reminders[i].content}.", true);
+                }
+            }
+
+            if(rem_count == 0)
+                await GUIOutput("You have no reminders for today.", true);
+
+            state = AssistantState.BACKGROUND_DEFAULT;
+        }
+
+
+        private async Task RandomWikiArticle()
         {
             try
             {
                 var http = new HttpClient();
-
-                string page_str, title;
+                string rand_page_str, title, selected_page_str, content;
                 int unvalid_seq, idx1, idx2;
+                
                 do
                 {
                     var rand_page = await http.GetAsync("http://en.wikipedia.org/wiki/Special:Random");
-                    page_str = await rand_page.Content.ReadAsStringAsync();
-                    unvalid_seq = page_str.IndexOf("\\u");
-                    idx2 = page_str.IndexOf(" - Wikipedia");
-                } while (idx2 == -1 || unvalid_seq != -1);
+                    rand_page_str = await rand_page.Content.ReadAsStringAsync();
+                    unvalid_seq = rand_page_str.IndexOf("\\u");
+                    idx2 = rand_page_str.IndexOf(" - Wikipedia");
+                } while(idx2 == -1 || unvalid_seq != -1);
 
-                idx1 = page_str.IndexOf("<title>") + "<title>".Length;
-                title = page_str.Substring(idx1, idx2 - idx1).Replace(' ', '_');
-                var response = await http.GetAsync("https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&exsentences=2&titles=" + title);
-                string result = await response.Content.ReadAsStringAsync();
-                idx1 = result.IndexOf("extract\":\"") + "extract\":\"".Length;
-                idx2 = result.IndexOf("\"}}}}");
-                string content = result.Substring(idx1, idx2 - idx1);
+                idx1 = rand_page_str.IndexOf("<title>") + "<title>".Length;
+                title = rand_page_str.Substring(idx1, idx2 - idx1).Replace(' ', '_');
+                var selected_page = await http.GetAsync("https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&exsentences=2&titles=" + title);
+                selected_page_str = await selected_page.Content.ReadAsStringAsync();
+                idx1 = selected_page_str.IndexOf("extract\":\"") + "extract\":\"".Length;
+                idx2 = selected_page_str.IndexOf("\"}}}}");
+                content = selected_page_str.Substring(idx1, idx2 - idx1);
 
-                while (content.IndexOf(" (") != -1)
+                while(content.IndexOf(" (") != -1)
                 {
                     idx1 = content.IndexOf(" (");
-                    if (content.IndexOf("))") != -1)
+                    if(content.IndexOf("))") != -1)
                     {
                         idx2 = content.IndexOf("))") + 2;
                         content = content.Remove(idx1, idx2 - idx1);
@@ -590,7 +628,7 @@ namespace VocalAssistant
                     }
                 }
 
-                while (content.IndexOf("\\n") != -1)
+                while(content.IndexOf("\\n") != -1)
                 {
                     idx1 = content.IndexOf("\\n");
                     content = content.Remove(idx1, 2);
@@ -599,7 +637,6 @@ namespace VocalAssistant
                 content = content.Replace("  ", " ");
                 content = content.Replace("   ", " ");
                 content = content.Replace("\\\"", "\"");
-
                 await GUIOutput(content, true);
             }
             catch
@@ -607,127 +644,124 @@ namespace VocalAssistant
                 await GUIOutput("I'm sorry, I couldn't retrieve the informations from the web.", true);
             }
             
-
-            state = AssistantState.BACKGROUND_LISTEN;
+            state = AssistantState.BACKGROUND_DEFAULT;
         }
+
+
+        private async Task GetWeatherInfos()
+        {
+            try
+            {
+                var position = await PositionManager.GetPosition();
+                WeatherForecastObject weather_infos = await WeatherAPIManager.GetWeather(position.Coordinate.Latitude, position.Coordinate.Longitude);
+
+                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            main_page.SwitchToWeatherGrid();
+                                            main_page.PrintWeatherInfos(weather_infos);
+                                        });
+
+                await GUIOutput("The weather forecast for " + weather_infos.name + " are: " + weather_infos.weather[0].description +
+                                " with temperature between " + ((int)weather_infos.main.temp_min).ToString() + " °C and " + ((int)weather_infos.main.temp_max).ToString() + " °C." +
+                                " The humidity rate is equal to " + ((int)weather_infos.main.humidity).ToString() + " % and the wind speed is " + ((int)weather_infos.wind.speed).ToString() + " meters per second.", true);
+
+                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+                                        () =>
+                                        {
+                                            main_page.SwitchToDefaultGrid();
+                                        });
+            }
+            catch
+            {
+                await GUIOutput("I'm sorry, I couldn't retrieve the informations from the web.", true);
+            }
+
+            state = AssistantState.BACKGROUND_DEFAULT;
+        }
+
 
         private async Task GetInspiringQuote()
         {
             try
             {
-                QuoteObject my_quote = await QuoteMapProxy.GetQuote();
-                await GUIOutput(my_quote.contents.quotes[0].quote, true);
+                QuoteObject inspiring_quote = await QuoteAPIManager.GetQuote();
+                await GUIOutput(inspiring_quote.contents.quotes[0].quote, true);
             }
             catch
             {
                 await GUIOutput("I'm sorry, I couldn't retrieve the informations from the web.", true);
             }
 
-            state = AssistantState.BACKGROUND_LISTEN;
+            state = AssistantState.BACKGROUND_DEFAULT;
         }
 
-        private async Task GetWeatherInfo()
-        {
-            //Get weather infos
-            try
-            {
-                var position = await LocationManager.GetPosition();
 
-                RootObject my_weather = await OpenWeatherMapProxy.GetWeather(position.Coordinate.Latitude, position.Coordinate.Longitude);
-
-                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                                        () =>
-                                        {
-                                            this_main_page.SwitchToWeather();
-                                            this_main_page.WeatherOut(my_weather);
-                                        });
-
-                await GUIOutput("The weather forecast for " + my_weather.name + " are: " + my_weather.weather[0].description +
-                                " with temperature between " + ((int)my_weather.main.temp_min).ToString() + " °C and " + ((int)my_weather.main.temp_max).ToString() + " °C. " +
-                                " The humidity rate is equal to " + ((int)my_weather.main.humidity).ToString() + " % and the wind speed is " + ((int)my_weather.wind.speed).ToString() + " meters per second.", true);
-
-                await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                                        () =>
-                                        {
-                                            this_main_page.SwitchToDefault();
-                                        });
-            }
-            catch
-            {
-                await GUIOutput("I'm sorry, I couldn't retrieve the informations from the web.", true);
-            }
-
-            state = AssistantState.BACKGROUND_LISTEN;
-        }
-
-        private async Task OpenStopWatch()
+        private async Task OpenStopwatch()
         {
             await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                                         () =>
                                         {
-                                            this_main_page.SwitchToStopWatch();
+                                            main_page.SwitchToStopwatchGrid();
                                         });
 
             state = AssistantState.BACKGROUND_STOPWATCH;
         }
 
-        private async Task CloseStopWatch()
+        private async Task CloseStopwatch()
         {
             await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                                         () =>
                                         {
-                                            this_main_page.SwitchToDefault();
+                                            main_page.SwitchToDefaultGrid();
                                         });
 
-            state = AssistantState.BACKGROUND_LISTEN;
+            state = AssistantState.BACKGROUND_DEFAULT;
         }
 
-        private async Task FindRecipe()
+
+        private async Task SearchRecipe()
         {
             await GUIOutput("What do you want to cook?", true);
             SpeechRecognitionResult food = await task_recognizer.RecognizeAsync();
-
             await GUIOutput("Searching a recipe for " + food.Text, false);
 
             try
             {
-                //Get recipe from web
                 var http = new HttpClient();
-                var obj = await http.GetAsync("https://api.edamam.com/search?q=" + food.Text + "&app_id=b4a3fd65&app_key=64c81e2e1ae114c948f814fc9c31041f&from=0&to=1");
-                string str = await obj.Content.ReadAsStringAsync();
-                int start = str.IndexOf("\"ingredientLines\" : [ \"") + "\"ingredientLines\" : [ \"".Length;
-                int end = str.IndexOf("\"ingredients\"") - 11;
-                string ingredients = str.Substring(start, end - start);
+                var response = await http.GetAsync("https://api.edamam.com/search?q=" + food.Text + "&app_id=b4a3fd65&app_key=64c81e2e1ae114c948f814fc9c31041f&from=0&to=1");
+                string recipe = await response.Content.ReadAsStringAsync();
+                int idx1 = recipe.IndexOf("\"ingredientLines\" : [ \"") + "\"ingredientLines\" : [ \"".Length;
+                int idx2 = recipe.IndexOf("\"ingredients\"") - 11;
+                string ingredients = recipe.Substring(idx1, idx2 - idx1);
                 ingredients = ingredients.Replace("\", \"", ";");
                 var ingredients_list = ingredients.Split(';');
 
-                start = str.IndexOf("\"label\" : \"") + "\"label\" : \"".Length;
-                end = str.IndexOf("\"image\"") - 9;
-                string recipe_name = str.Substring(start, end - start);
+                idx1 = recipe.IndexOf("\"label\" : \"") + "\"label\" : \"".Length;
+                idx2 = recipe.IndexOf("\"image\"") - 9;
+                string recipe_name = recipe.Substring(idx1, idx2 - idx1);
 
-                start = str.IndexOf("\"image\" : \"") + "\"image\" : \"".Length;
-                end = str.IndexOf("\"source\"") - 9;
-                string recipe_image = str.Substring(start, end - start);
+                idx1 = recipe.IndexOf("\"image\" : \"") + "\"image\" : \"".Length;
+                idx2 = recipe.IndexOf("\"source\"") - 9;
+                string recipe_photo = recipe.Substring(idx1, idx2 - idx1);
 
-                //Switch grid
                 await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                                         () =>
                                         {
-                                            this_main_page.SwitchToRecipes();
-                                            this_main_page.SetRecipeName(recipe_name);
-                                            this_main_page.SetRecipeImg(recipe_image);
-                                            this_main_page.SetIngredients(ingredients_list);
+                                            main_page.SwitchToRecipeGrid();
+                                            main_page.SetRecipeName(recipe_name);
+                                            main_page.SetRecipePhoto(recipe_photo);
+                                            main_page.SetRecipeIngredients(ingredients_list);
                                         });
 
-                //Wait until the user click the exit button
-                remain_in_recipe_view = true;
-                while (remain_in_recipe_view);
+                // Stay in the recipe grid until the user clicks the exit button
+                in_recipe_view = true;
+                while(in_recipe_view);
 
-                //Switch back to default grid
                 await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                                         () =>
                                         {
-                                            this_main_page.SwitchToDefault();
+                                            main_page.SwitchToDefaultGrid();
                                         });
             }
             catch
@@ -735,122 +769,33 @@ namespace VocalAssistant
                 await GUIOutput("I'm sorry, I couldn't retrieve the informations from the web.", true);
             }
 
-            state = AssistantState.BACKGROUND_LISTEN;
+            state = AssistantState.BACKGROUND_DEFAULT;
         }
 
-        //Return to default grid from repice function
-        public void RecipeReturnToDefault()
-        {
-            remain_in_recipe_view = false;
-        }
-
-        //Slider volume control function
-        public void SetMediaPlayerVolume(double val)
-        {
-            player.Volume = val / 100.0;
-        }
-
-        //Play button control function
-        public void SetMediaPlayerPlay()
-        {
-            if (player.CurrentState != MediaPlayerState.Playing)
-                player.Play();
-        }
-
-        //Close button control function
-        public async Task CloseMediaPlayer()
-        {
-            player.Pause();
-            songIndex = 0;
-
-            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
-                                   () =>
-                                   {
-                                       this_main_page.SwitchToDefault();
-                                   });
-
-            state = AssistantState.BACKGROUND_LISTEN;
-        }
-
-        //Stop button control function
-        public void SetMediaPlayerStop()
-        {
-            if (player.CurrentState == MediaPlayerState.Playing)
-                player.Pause();
-        }
-
-        //Next button control function
-        public async Task SetMediaPlayerNext()
-        {
-            player.Pause();
-            if (songIndex + 1 >= songList.Count)
-                songIndex = 0;
-            else
-                songIndex++;
-            await PlayMusic();
-        }
-
-        //Previous button control function
-        public async Task SetMediaPlayerPrevious()
-        {
-            player.Pause();
-            if (songIndex - 1 < 0)
-                songIndex = songList.Count - 1;
-            else
-                songIndex--;
-            await PlayMusic();
-        }
-
-        //Metadata extraction function
-        private KeyValuePair<string, string> ExtractMetadata(int idx)
-        {
-            string title;
-            string artist;
-
-            int i = songList[idx].LastIndexOf('.');
-            string temp = songList[idx].Remove(i);
-            i = temp.LastIndexOf('-');
-            if(i > 0)
-            {
-               title = temp.Remove(i);
-               artist = temp.Remove(0, i + 1);
-            }
-            else
-            {
-                title = temp;
-                artist = "";
-            }
-            
-
-            KeyValuePair<string, string> result = new KeyValuePair<string, string>(title, artist);
-
-            return result;
-        }
+        // Handles return to default grid from recipe grid
+        public void RecipeGridToDefaultGrid() { in_recipe_view = false; }
 
 
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
             Frame rootFrame = Window.Current.Content as Frame;
 
-            if (rootFrame == null)
+            if(rootFrame == null)
             {
                 rootFrame = new Frame();
-
                 rootFrame.NavigationFailed += OnNavigationFailed;
-
                 Window.Current.Content = rootFrame;
             }
 
-            if (e.PrelaunchActivated == false)
+            if(e.PrelaunchActivated == false)
             {
-                if (rootFrame.Content == null)
+                if(rootFrame.Content == null)
                 {
                     rootFrame.Navigate(typeof(MainPage), e.Arguments);
                 }
-                Window.Current.Activate();
 
-                //Get Main page
-                this_main_page = (MainPage)rootFrame.Content;
+                Window.Current.Activate();
+                main_page = (MainPage)rootFrame.Content;
             }
         }
 

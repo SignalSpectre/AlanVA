@@ -1,0 +1,284 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Machine>DESKTOP-IA5DSH6</Machine>
+    <WindowsUser>Ema</WindowsUser>
+    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <TargetOsVersion>10.0</TargetOsVersion>
+    <TargetOsDescription>Windows 10.0</TargetOsDescription>
+    <SolutionConfiguration>Release|ARM</SolutionConfiguration>
+    <PackageArchitecture>arm</PackageArchitecture>
+    <PackageIdentityName>69a2f5d0-5113-4002-a9b8-2aa3c9496417</PackageIdentityName>
+    <PackageIdentityPublisher>CN=Marco</PackageIdentityPublisher>
+    <IntermediateOutputPath>C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\obj\ARM\Release\</IntermediateOutputPath>
+    <RemoteDeploymentType>
+    </RemoteDeploymentType>
+    <PackageRegistrationPath>
+    </PackageRegistrationPath>
+    <RemoveNonLayoutFiles>true</RemoveNonLayoutFiles>
+    <DeployOptionalPackages>false</DeployOptionalPackages>
+    <WindowsSdkPath>C:\Program Files %28x86%29\Windows Kits\10\</WindowsSdkPath>
+    <LayoutDir>C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\AppX</LayoutDir>
+    <RegisteredManifestChecksum>FDF6BBA709CA6137DF76E687D6E68B543D0BA47FF255E532564B11EE3D8A1C2F</RegisteredManifestChecksum>
+    <RegisteredPackageMoniker>69a2f5d0-5113-4002-a9b8-2aa3c9496417_1.0.3.0_arm__vq1db0jerwj5g</RegisteredPackageMoniker>
+    <RegisteredUserModeAppID>69a2f5d0-5113-4002-a9b8-2aa3c9496417_vq1db0jerwj5g!App</RegisteredUserModeAppID>
+    <RegisteredPackageID>69a2f5d0-5113-4002-a9b8-2aa3c9496417</RegisteredPackageID>
+    <RegisteredPackagePublisher>CN=Marco</RegisteredPackagePublisher>
+    <RegisteredVersion>1.0.3.0</RegisteredVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <AppXManifest Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\AppxManifest.xml">
+      <PackagePath>AppxManifest.xml</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-07-09T14:34:54.401</Modified>
+    </AppXManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\assistant_logos\logo.png">
+      <PackagePath>Assets\assistant_logos\logo.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.282</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\assistant_logos\logo_animated.gif">
+      <PackagePath>Assets\assistant_logos\logo_animated.gif</PackagePath>
+      <Modified>2019-06-28T18:53:15.296</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\LockScreenLogo.scale-200.png">
+      <PackagePath>Assets\LockScreenLogo.scale-200.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.256</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\SplashScreen.scale-200.png">
+      <PackagePath>Assets\SplashScreen.scale-200.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-06-28T18:53:15.260</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\Square150x150Logo.scale-200.png">
+      <PackagePath>Assets\Square150x150Logo.scale-200.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-06-28T18:53:15.264</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\Square44x44Logo.scale-200.png">
+      <PackagePath>Assets\Square44x44Logo.scale-200.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-06-28T18:53:15.268</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
+      <PackagePath>Assets\Square44x44Logo.targetsize-24_altform-unplated.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-06-28T18:53:15.271</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\StoreLogo.png">
+      <PackagePath>Assets\StoreLogo.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-06-28T18:53:15.274</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\01d.png">
+      <PackagePath>Assets\weather_icons\01d.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.302</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\01n.png">
+      <PackagePath>Assets\weather_icons\01n.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.306</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\02d.png">
+      <PackagePath>Assets\weather_icons\02d.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.310</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\02n.png">
+      <PackagePath>Assets\weather_icons\02n.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.314</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\03d.png">
+      <PackagePath>Assets\weather_icons\03d.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.317</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\03n.png">
+      <PackagePath>Assets\weather_icons\03n.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.322</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\04d.png">
+      <PackagePath>Assets\weather_icons\04d.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.326</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\04n.png">
+      <PackagePath>Assets\weather_icons\04n.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.330</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\09d.png">
+      <PackagePath>Assets\weather_icons\09d.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.334</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\09n.png">
+      <PackagePath>Assets\weather_icons\09n.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.337</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\10d.png">
+      <PackagePath>Assets\weather_icons\10d.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.341</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\10n.png">
+      <PackagePath>Assets\weather_icons\10n.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.345</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\11d.png">
+      <PackagePath>Assets\weather_icons\11d.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.349</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\11n.png">
+      <PackagePath>Assets\weather_icons\11n.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.353</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\13d.png">
+      <PackagePath>Assets\weather_icons\13d.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.357</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\13n.png">
+      <PackagePath>Assets\weather_icons\13n.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.361</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\50d.png">
+      <PackagePath>Assets\weather_icons\50d.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.364</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\weather_icons\50n.png">
+      <PackagePath>Assets\weather_icons\50n.png</PackagePath>
+      <Modified>2019-06-28T18:53:15.368</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Assets\Wide310x150Logo.scale-200.png">
+      <PackagePath>Assets\Wide310x150Logo.scale-200.png</PackagePath>
+      <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
+      <Modified>2019-06-28T18:53:15.277</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\clrcompression.dll">
+      <PackagePath>clrcompression.dll</PackagePath>
+      <Modified>2016-06-13T19:43:02.000</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Music\Bohemian Rapsody - Queen.wma">
+      <PackagePath>Music\Bohemian Rapsody - Queen.wma</PackagePath>
+      <Modified>2019-06-28T18:53:15.547</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Music\Fly Me to the Moon %28In Other Words%29 - Brenda Lee.mp3">
+      <PackagePath>Music\Fly Me to the Moon %28In Other Words%29 - Brenda Lee.mp3</PackagePath>
+      <Modified>2019-06-28T18:53:15.608</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Music\Running in The 90%27s.mp3">
+      <PackagePath>Music\Running in The 90%27s.mp3</PackagePath>
+      <Modified>2019-06-28T18:53:15.679</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\Music\Shoot To Thrill - ACDC.wma">
+      <PackagePath>Music\Shoot To Thrill - ACDC.wma</PackagePath>
+      <Modified>2019-06-28T18:53:15.757</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\reminder_grammar.xml">
+      <PackagePath>reminder_grammar.xml</PackagePath>
+      <Modified>2019-06-28T18:53:15.942</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\resources.pri">
+      <PackagePath>resources.pri</PackagePath>
+      <Modified>2019-07-09T14:33:38.146</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\VocalAssistant.dll">
+      <PackagePath>VocalAssistant.dll</PackagePath>
+      <Modified>2019-07-09T14:34:53.574</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\VocalAssistant.exe">
+      <PackagePath>VocalAssistant.exe</PackagePath>
+      <Modified>2019-07-09T14:34:54.346</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Release\ilc\VocalAssistant.pdb">
+      <PackagePath>VocalAssistant.pdb</PackagePath>
+      <Modified>2019-07-09T14:34:54.312</Modified>
+    </AppxPackagedFile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResolvedSDKReference Include="C:\Users\Ema\.nuget\packages\microsoft.net.native.sharedlibrary-x86\1.7.0\build\..\tools\SharedLibrary\ret\Native\Microsoft.NET.Native.Framework.1.7.appx">
+      <Name>Microsoft.NET.Native.Framework.1.7</Name>
+      <Version>1.7.25531.0</Version>
+      <Architecture>x86</Architecture>
+      <FrameworkIdentity>Name = Microsoft.NET.Native.Framework.1.7, MinVersion = 1.7.25531.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Users\Ema\.nuget\packages\microsoft.net.native.sharedlibrary-x86\1.7.0\build\..\tools\SharedLibrary\ret\Native\Microsoft.NET.Native.Framework.1.7.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Users\Ema\.nuget\packages\microsoft.net.native.sharedlibrary-x64\1.7.0\build\..\tools\SharedLibrary\ret\Native\Microsoft.NET.Native.Framework.1.7.appx">
+      <Name>Microsoft.NET.Native.Framework.1.7</Name>
+      <Version>1.7.25531.0</Version>
+      <Architecture>x64</Architecture>
+      <FrameworkIdentity>Name = Microsoft.NET.Native.Framework.1.7, MinVersion = 1.7.25531.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Users\Ema\.nuget\packages\microsoft.net.native.sharedlibrary-x64\1.7.0\build\..\tools\SharedLibrary\ret\Native\Microsoft.NET.Native.Framework.1.7.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Users\Ema\.nuget\packages\microsoft.net.native.sharedlibrary-arm\1.7.0\build\..\tools\SharedLibrary\ret\Native\Microsoft.NET.Native.Framework.1.7.appx">
+      <Name>Microsoft.NET.Native.Framework.1.7</Name>
+      <Version>1.7.25531.0</Version>
+      <Architecture>arm</Architecture>
+      <FrameworkIdentity>Name = Microsoft.NET.Native.Framework.1.7, MinVersion = 1.7.25531.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Users\Ema\.nuget\packages\microsoft.net.native.sharedlibrary-arm\1.7.0\build\..\tools\SharedLibrary\ret\Native\Microsoft.NET.Native.Framework.1.7.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Users\Ema\.nuget\packages\microsoft.net.native.compiler\1.7.3\build\..\tools\Runtime\x86\Microsoft.NET.Native.Runtime.1.7.appx">
+      <Name>Microsoft.NET.Native.Runtime.1.7</Name>
+      <Version>1.7.25531.0</Version>
+      <Architecture>x86</Architecture>
+      <FrameworkIdentity>Name = Microsoft.NET.Native.Runtime.1.7, MinVersion = 1.7.25531.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Users\Ema\.nuget\packages\microsoft.net.native.compiler\1.7.3\build\..\tools\Runtime\x86\Microsoft.NET.Native.Runtime.1.7.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Users\Ema\.nuget\packages\microsoft.net.native.compiler\1.7.3\build\..\tools\Runtime\x64\Microsoft.NET.Native.Runtime.1.7.appx">
+      <Name>Microsoft.NET.Native.Runtime.1.7</Name>
+      <Version>1.7.25531.0</Version>
+      <Architecture>x64</Architecture>
+      <FrameworkIdentity>Name = Microsoft.NET.Native.Runtime.1.7, MinVersion = 1.7.25531.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Users\Ema\.nuget\packages\microsoft.net.native.compiler\1.7.3\build\..\tools\Runtime\x64\Microsoft.NET.Native.Runtime.1.7.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Users\Ema\.nuget\packages\microsoft.net.native.compiler\1.7.3\build\..\tools\Runtime\arm\Microsoft.NET.Native.Runtime.1.7.appx">
+      <Name>Microsoft.NET.Native.Runtime.1.7</Name>
+      <Version>1.7.25531.0</Version>
+      <Architecture>arm</Architecture>
+      <FrameworkIdentity>Name = Microsoft.NET.Native.Runtime.1.7, MinVersion = 1.7.25531.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Users\Ema\.nuget\packages\microsoft.net.native.compiler\1.7.3\build\..\tools\Runtime\arm\Microsoft.NET.Native.Runtime.1.7.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\">
+      <Name>Microsoft.VCLibs.140.00</Name>
+      <Version>14.0.26706.0</Version>
+      <Architecture>ARM</Architecture>
+      <FrameworkIdentity>Name = Microsoft.VCLibs.140.00, MinVersion = 14.0.26706.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\.\AppX\Retail\ARM\Microsoft.VCLibs.ARM.14.00.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\">
+      <Name>Microsoft.VCLibs.140.00</Name>
+      <Version>14.0.26706.0</Version>
+      <Architecture>ARM64</Architecture>
+      <FrameworkIdentity>Name = Microsoft.VCLibs.140.00, MinVersion = 14.0.26706.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\.\AppX\Retail\ARM64\Microsoft.VCLibs.ARM64.14.00.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\">
+      <Name>Microsoft.VCLibs.140.00</Name>
+      <Version>14.0.26706.0</Version>
+      <Architecture>x64</Architecture>
+      <FrameworkIdentity>Name = Microsoft.VCLibs.140.00, MinVersion = 14.0.26706.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\.\AppX\Retail\x64\Microsoft.VCLibs.x64.14.00.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+    <ResolvedSDKReference Include="C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\">
+      <Name>Microsoft.VCLibs.140.00</Name>
+      <Version>14.0.26706.0</Version>
+      <Architecture>x86</Architecture>
+      <FrameworkIdentity>Name = Microsoft.VCLibs.140.00, MinVersion = 14.0.26706.0, Publisher = %27CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US%27</FrameworkIdentity>
+      <AppxLocation>C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.VCLibs\14.0\.\AppX\Retail\x86\Microsoft.VCLibs.x86.14.00.appx</AppxLocation>
+      <MoreInfo>
+      </MoreInfo>
+    </ResolvedSDKReference>
+  </ItemGroup>
+</Project>

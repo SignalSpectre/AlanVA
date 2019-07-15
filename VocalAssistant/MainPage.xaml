@@ -13,66 +13,62 @@
             <SolidColorBrush Color="#192936"/>
         </Grid.Background>
         <Grid>
-            <AppBarButton x:Name="Options" Icon="GlobalNavigationButton" HorizontalAlignment="Left" Margin="722,10,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Height="47">
+            <AppBarButton x:Name="options" Icon="GlobalNavigationButton" HorizontalAlignment="Left" Margin="722, 10, 0, 0" VerticalAlignment="Top" Foreground="White" Background="#192936" Height="47">
                 <AppBarButton.Flyout>
                     <MenuFlyout>
-                        <MenuFlyoutItem x:Name="reboot" Text="Reboot the System" Click="reboot_Click" ></MenuFlyoutItem>
-                        <MenuFlyoutItem x:Name="shutdown" Text="Shutdown the System" Click="shutdown_Click" ></MenuFlyoutItem>
-                        <MenuFlyoutItem x:Name="restart" Text="Restart the Application" Click="restart_Click" ></MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="restart" Text="Restart the application" Click="RestartAppClick"></MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="reboot" Text="Reboot the system" Click="RebootSysClick"></MenuFlyoutItem>
+                        <MenuFlyoutItem x:Name="shutdown" Text="Shutdown the system" Click="ShutdownSysClick"></MenuFlyoutItem>
                     </MenuFlyout>
                 </AppBarButton.Flyout>
             </AppBarButton>
         </Grid>
-        <Grid x:Name="defaultGrid" Visibility="Visible">
-            <Grid HorizontalAlignment="Center" Height="206" Margin="0,240,0,0" VerticalAlignment="Top" Width="719" RenderTransformOrigin="0.507,0.521">
-                <TextBlock x:Name="output" HorizontalAlignment="Center" Margin="0,0
-                       ,0,0" Text="Setting up..." TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="20" FontWeight="Normal"/>
+        <Grid x:Name="default_grid" Visibility="Visible">
+            <Grid HorizontalAlignment="Center" Height="206" Margin="0, 240, 0, 0" VerticalAlignment="Top" Width="719" RenderTransformOrigin="0.507, 0.521">
+                <TextBlock x:Name="dg_text" HorizontalAlignment="Center" Margin="0, 0, 0, 0" Text="Setting up..." TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="20" FontWeight="Normal"/>
             </Grid>
-            <Image x:Name="logo" HorizontalAlignment="Center" Height="220" Margin="0,20,0,0" VerticalAlignment="Top" Width="300"/>
+            <Image x:Name="dg_logo" HorizontalAlignment="Center" Height="220" Margin="0, 20, 0, 0" VerticalAlignment="Top" Width="300"/>
         </Grid>
 
-        <Grid x:Name="weatherGrid" Visibility="Collapsed">
+        <Grid x:Name="weather_grid" Visibility="Collapsed">
             <StackPanel>
-                <StackPanel  VerticalAlignment="Center" Margin="0,0,0,0">
-                    <Image Name="ResultImage" Width="200" Height="200" HorizontalAlignment="Center"/>
-                    <TextBlock Name="LocationTextBlock" FontSize="50" Foreground="White" HorizontalAlignment="Center" TextWrapping="Wrap"/>
-                    <TextBlock Name="DescriptionTextBlock" FontSize="35" Foreground="White" HorizontalAlignment="Center"/>
-                    <TextBlock Name="TempTextBlock" FontSize="30" Foreground="White" HorizontalAlignment="Center"/>
-                    <TextBlock Name="HumidityTextBlock" FontSize="30" Foreground="White" HorizontalAlignment="Center"/>
-                    <TextBlock Name="WindTextBlock" FontSize="30" Foreground="White" HorizontalAlignment="Center"/>
+                <StackPanel VerticalAlignment="Center" Margin="0, 0, 0, 0">
+                    <Image Name="icon" Width="200" Height="200" HorizontalAlignment="Center"/>
+                    <TextBlock Name="location" FontSize="50" Foreground="White" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Name="description" FontSize="35" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Name="temperature" FontSize="30" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Name="humidity" FontSize="30" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Name="wind" FontSize="30" Foreground="White" HorizontalAlignment="Center"/>
                 </StackPanel>
             </StackPanel>
         </Grid>
 
-        <Grid x:Name="musicPlayerGrid" Visibility="Collapsed">
-            <TextBlock x:Name="playerOutputTitle" HorizontalAlignment="Center" Margin="0,240,0,0" Text="Title" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="25" FontWeight="Bold" TextAlignment="Left"/>
-            <TextBlock x:Name="playerOutputArtist" HorizontalAlignment="Center" Margin="0,288,0,0" Text="Artist" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="20" FontWeight="Normal" TextAlignment="Right"/>
-            <Image x:Name="playerLogo" HorizontalAlignment="Center" Height="220" Margin="0,20,0,0" VerticalAlignment="Top" Width="300"/>
-            <AppBarButton x:Name="pause" Icon="Pause" Label="Stop" HorizontalAlignment="Left" Margin="312,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="pause_Click" Width="54" Height="61"/>
-            <AppBarButton x:Name="play" Icon="Play" Label="Play" HorizontalAlignment="Left" Margin="385,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="play_Click" Width="54" Height="61"/>
-            <AppBarButton x:Name="stop" Icon="Cancel" Label="Close" HorizontalAlignment="Left" Margin="243,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="stop_Click" Height="61" Width="54"/>
-            <AppBarButton x:Name="previous" Icon="Previous" Label="Previous" HorizontalAlignment="Left" Margin="172,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="previous_Click" Width="54" Height="61"/>
-            <AppBarButton x:Name="next" Icon="Next" Label="Next" HorizontalAlignment="Left" Margin="455,340,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="next_Click" Width="54" Height="61"/>
-            <Slider x:Name="volume" HorizontalAlignment="Left" Margin="530,345,0,0" VerticalAlignment="Top" Width="130" Height="44" Background="White" ValueChanged="slider_ValueChanged"/>
+        <Grid x:Name="media_player_grid" Visibility="Collapsed">
+            <TextBlock x:Name="title" HorizontalAlignment="Center" Margin="0, 240, 0, 0" Text="Title" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="25" FontWeight="Bold" TextAlignment="Left"/>
+            <TextBlock x:Name="artist" HorizontalAlignment="Center" Margin="0, 288, 0, 0" Text="Artist" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="20" FontWeight="Normal" TextAlignment="Right"/>
+            <Image x:Name="mpg_logo" HorizontalAlignment="Center" Height="220" Margin="0, 20, 0, 0" VerticalAlignment="Top" Width="300"/>
+            <AppBarButton x:Name="mp_stop" Icon="Pause" Label="Stop" HorizontalAlignment="Left" Margin="312, 340, 0, 0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="StopSongClick" Width="54" Height="61"/>
+            <AppBarButton x:Name="mp_play" Icon="Play" Label="Play" HorizontalAlignment="Left" Margin="385, 340, 0, 0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="PlaySongClick" Width="54" Height="61"/>
+            <AppBarButton x:Name="mp_close" Icon="Cancel" Label="Close" HorizontalAlignment="Left" Margin="243, 340, 0, 0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="CloseMediaPlayerClick" Height="61" Width="54"/>
+            <AppBarButton x:Name="mp_previous" Icon="Previous" Label="Previous" HorizontalAlignment="Left" Margin="172, 340, 0, 0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="PreviousSongClick" Width="54" Height="61"/>
+            <AppBarButton x:Name="mp_next" Icon="Next" Label="Next" HorizontalAlignment="Left" Margin="455, 340, 0, 0" VerticalAlignment="Top" Foreground="White" Background="#192936" Click="NextSongClick" Width="54" Height="61"/>
+            <Slider x:Name="volume" HorizontalAlignment="Left" Margin="530, 345, 0, 0" VerticalAlignment="Top" Width="130" Height="44" Background="White" ValueChanged="SliderValueChanged"/>
         </Grid>
 
-        <Grid x:Name="stopWatchGrid" Visibility="Collapsed">
-            <TextBlock x:Name="textSW" HorizontalAlignment="Center" Margin="0,140,0,0" Text="00:00:00" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="50"/>
-            <AppBarButton x:Name="resetSW" Content="Reset" BorderBrush="White" BorderThickness="1"  Margin="494,322,0,0" Foreground="White" Click="resetSW_Click" Height="49" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-            <AppBarButton x:Name="stopSW" Content="Stop" BorderBrush="White" BorderThickness="1"  Foreground="White" Click="stopSW_Click" Height="49" HorizontalAlignment="Center" Margin="0,321,0,0" VerticalAlignment="Top"/>
-            <AppBarButton x:Name="playSW" Content="Start" BorderBrush="White" BorderThickness="1"  Margin="238,322,0,0" Foreground="White" Click="playSW_Click" Height="49" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <Grid x:Name="stopwatch_grid" Visibility="Collapsed">
+            <TextBlock x:Name="value" HorizontalAlignment="Center" Margin="0, 140, 0, 0" Text="00:00:00" TextWrapping="Wrap" VerticalAlignment="Top" Foreground="White" FontSize="50"/>
+            <AppBarButton x:Name="sw_reset" Content="Reset" BorderBrush="White" BorderThickness="1" Margin="494, 322, 0, 0" Foreground="White" Click="ResetSwClick" Height="49" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <AppBarButton x:Name="sw_stop" Content="Stop" BorderBrush="White" BorderThickness="1" Margin="0, 321, 0, 0" Foreground="White" Click="StopSwClick" Height="49" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+            <AppBarButton x:Name="sw_start" Content="Start" BorderBrush="White" BorderThickness="1" Margin="238, 322, 0, 0" Foreground="White" Click="StartSwClick" Height="49" HorizontalAlignment="Left" VerticalAlignment="Top"/>
         </Grid>
 
-        <Grid x:Name="recipesGrid" Visibility="Collapsed">
-            <TextBlock x:Name="recipeName" Text="Prova" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="30" Foreground="White" FontWeight="Bold" Margin="44,26,404,275"/>
-            <Image x:Name="recipePhoto" Width="200" Height="200" Margin="474,26,126,254"/>
-            <ScrollViewer Height="212" Margin="44,268,83,0" VerticalAlignment="Top">
-                <TextBlock x:Name="ingredients" Margin="0,0,0,0" HorizontalAlignment="Stretch" FontSize="20" Foreground="White" VerticalAlignment="Stretch"/>
+        <Grid x:Name="recipe_grid" Visibility="Collapsed">
+            <TextBlock x:Name="name" Text="Prova" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="30" Foreground="White" FontWeight="Bold" Margin="44, 26, 404, 275"/>
+            <Image x:Name="photo" Width="200" Height="200" Margin="474, 26, 126, 254"/>
+            <ScrollViewer Height="212" Margin="44, 268, 83, 0" VerticalAlignment="Top">
+                <TextBlock x:Name="ingredients" Margin="0, 0, 0, 0" HorizontalAlignment="Stretch" FontSize="20" Foreground="White" VerticalAlignment="Stretch"/>
             </ScrollViewer>
-            <AppBarButton x:Name="exitRecipes" Icon="Cancel"  HorizontalAlignment="Left" Margin="722,423,0,0" VerticalAlignment="Top" Foreground="White" Background="#192936" Height="47" Click="exitRecipes_Click"/>
+            <AppBarButton x:Name="exit" Icon="Cancel" HorizontalAlignment="Left" Margin="722, 423, 0, 0" VerticalAlignment="Top" Foreground="White" Background="#192936" Height="47" Click="ExitRecipeClick"/>
         </Grid>
-
     </Grid>
-
-
 </Page>

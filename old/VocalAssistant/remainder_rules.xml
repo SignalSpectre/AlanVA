@@ -1,0 +1,105 @@
+﻿<grammar
+    version="1.0"
+    xml:lang="en-US"
+    xmlns="http://www.w3.org/2001/06/grammar"
+  root="rootRule">
+  <rule id="rootRule">
+    <one-of>
+      <item><ruleref uri="#rule1"/></item>
+      <item><ruleref uri="#rule2"/></item>
+      <item><ruleref uri="#rule3"/></item>
+      <item><ruleref uri="#rule4"/></item>
+      <item><ruleref uri="#rule5"/></item>
+      <item><ruleref uri="#rule6"/></item>
+      <item><ruleref uri="#rule7"/></item>
+      <item><ruleref uri="#rule8"/></item>
+      <item><ruleref uri="#rule9"/></item>
+      <item><ruleref uri="#rule10"/></item>
+      <item><ruleref uri="#rule11"/></item>
+      <item><ruleref uri="#rule12"/></item>
+    </one-of>
+  </rule>
+  <rule id="rule1">
+    <item>january</item>
+    <ruleref uri="#rule13"/>
+  </rule>
+  <rule id="rule2">
+    <item>february</item>
+    <ruleref uri="#rule13"/>
+  </rule>
+  <rule id="rule3">
+    <item>march</item>
+    <ruleref uri="#rule13"/>
+  </rule>
+  <rule id="rule4">
+    <item>april</item>
+    <ruleref uri="#rule13"/>
+  </rule>
+  <rule id="rule5">
+    <item>may</item>
+    <ruleref uri="#rule13"/>
+  </rule>
+  <rule id="rule6">
+    <item>june</item>
+    <ruleref uri="#rule13"/>
+  </rule>
+  <rule id="rule7">
+    <item>july</item>
+    <ruleref uri="#rule13"/>
+  </rule>
+  <rule id="rule8">
+    <item>august</item>
+    <ruleref uri="#rule13"/>
+  </rule>
+  <rule id="rule9">
+    <item>september</item>
+    <ruleref uri="#rule13"/>
+  </rule>
+  <rule id="rule10">
+    <item>october</item>
+    <ruleref uri="#rule13"/>
+  </rule>
+  <rule id="rule11">
+    <item>november</item>
+    <ruleref uri="#rule13"/>
+  </rule>
+  <rule id="rule12">
+    <item>december</item>
+    <ruleref uri="#rule13"/>
+  </rule>
+  <rule id="rule13">
+    <one-of>
+      <item>1</item>
+      <item>2</item>
+      <item>3</item>
+      <item>4</item>
+      <item>5</item>
+      <item>6</item>
+      <item>7</item>
+      <item>8</item>
+      <item>9</item>
+      <item>10</item>
+      <item>11</item>
+      <item>12</item>
+      <item>13</item>
+      <item>14</item>
+      <item>15</item>
+      <item>16</item>
+      <item>17</item>
+      <item>18</item>
+      <item>19</item>
+      <item>20</item>
+      <item>21</item>
+      <item>22</item>
+      <item>23</item>
+      <item>24</item>
+      <item>25</item>
+      <item>26</item>
+      <item>27</item>
+      <item>28</item>
+      <item>29</item>
+      <item>30</item>
+      <item>31</item>
+    </one-of>
+  </rule>
+</grammar>
