@@ -1,7 +1,7 @@
 # Alan Vocal Assistant
-Vocal assistant roject within the course of ICT Lab of the Università degli Studi di Udine.
+Vocal assistant developed within the course of ICT Lab of the Università degli Studi di Udine.
 
-Alan is a simple vocal assistant with several functionalities:
+Alan is a "simple" vocal assistant with several functionalities:
 - *What time is it?*: Alan will answer you with the current time;
 - *What day is today?*: Alan will give you the current day;
 - *Inspire me*: Alan will motivate you with a brillant quote;
