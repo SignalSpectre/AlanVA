@@ -1,4 +1,4 @@
-# AlanVA
+# Alan Vocal Assistant
 Vocal assistant roject within the course of ICT Lab of the Università degli Studi di Udine.
 
 Alan is a simple vocal assistant with several functionalities:
