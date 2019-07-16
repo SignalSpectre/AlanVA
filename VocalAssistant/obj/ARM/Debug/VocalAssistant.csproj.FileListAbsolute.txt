@@ -217,10 +217,3 @@ C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio I
 C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\obj\ARM\Debug\qualifiers.txt.intermediate
 C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\obj\ARM\Debug\MultipleQualifiersPerDimensionFound.txt
 C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\obj\ARM\Debug\ProjectArchitectures.txt
-C:\Users\Marco\source\repos\VocalAssistant\VocalAssistant\obj\ARM\Debug\App.g.i.cs
-C:\Users\Marco\source\repos\VocalAssistant\VocalAssistant\obj\ARM\Debug\App.g.cs
-C:\Users\Marco\source\repos\VocalAssistant\VocalAssistant\obj\ARM\Debug\App.xaml
-C:\Users\Marco\source\repos\VocalAssistant\VocalAssistant\obj\ARM\Debug\MainPage.xaml
-C:\Users\Marco\source\repos\VocalAssistant\VocalAssistant\obj\ARM\Debug\App.xbf
-C:\Users\Marco\source\repos\VocalAssistant\VocalAssistant\obj\ARM\Debug\MainPage.xbf
-C:\Users\Marco\source\repos\VocalAssistant\VocalAssistant\obj\ARM\Debug\XamlSaveStateFile.xml

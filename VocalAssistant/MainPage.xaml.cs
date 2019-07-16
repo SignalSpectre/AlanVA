@@ -93,6 +93,7 @@ namespace VocalAssistant
 
         public void SetRecipeIngredients(string[] ingredients_list)
         {
+            ingredients.Text = "";
             foreach(string ingredient in ingredients_list)
                 ingredients.Text += "\u2022 " + ingredient + "\n";
         }

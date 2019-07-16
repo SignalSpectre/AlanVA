@@ -19,7 +19,7 @@
     <DeployOptionalPackages>false</DeployOptionalPackages>
     <WindowsSdkPath>C:\Program Files %28x86%29\Windows Kits\10\</WindowsSdkPath>
     <LayoutDir>C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Debug\AppX</LayoutDir>
-    <RegisteredManifestChecksum>6FA649CC8B8E199DD94BF1A604F7BF2DEAE1732BC1DF771F7B999FC683732F39</RegisteredManifestChecksum>
+    <RegisteredManifestChecksum>27BF36CE45F4F55246D38FC4E9D2EDAAFE5468A8315776EB856E323DEF948692</RegisteredManifestChecksum>
     <RegisteredPackageMoniker>69a2f5d0-5113-4002-a9b8-2aa3c9496417_1.0.3.0_arm__vq1db0jerwj5g</RegisteredPackageMoniker>
     <RegisteredUserModeAppID>69a2f5d0-5113-4002-a9b8-2aa3c9496417_vq1db0jerwj5g!App</RegisteredUserModeAppID>
     <RegisteredPackageID>69a2f5d0-5113-4002-a9b8-2aa3c9496417</RegisteredPackageID>
@@ -30,13 +30,13 @@
     <AppXManifest Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Debug\Core\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2019-07-09T14:10:02.279</Modified>
+      <Modified>2019-07-15T14:39:40.813</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
     <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Debug\VocalAssistant.exe">
       <PackagePath>entrypoint\VocalAssistant.exe</PackagePath>
-      <Modified>2019-07-09T14:09:58.154</Modified>
+      <Modified>2019-07-15T14:39:39.466</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Ema\.nuget\packages\microsoft.csharp\4.0.1\lib\netcore50\Microsoft.CSharp.dll">
       <PackagePath>Microsoft.CSharp.dll</PackagePath>
@@ -638,11 +638,11 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Debug\App.xbf">
       <PackagePath>App.xbf</PackagePath>
-      <Modified>2019-07-09T14:09:57.597</Modified>
+      <Modified>2019-07-15T14:39:39.149</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Debug\MainPage.xbf">
       <PackagePath>MainPage.xbf</PackagePath>
-      <Modified>2019-07-09T14:09:57.596</Modified>
+      <Modified>2019-07-15T14:39:39.149</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Program Files %28x86%29\Windows Kits\10\UnionMetadata\10.0.16299.0\Windows.winmd">
       <PackagePath>WinMetadata\Windows.winmd</PackagePath>
@@ -650,11 +650,11 @@
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
-      <Modified>2019-07-09T14:10:01.348</Modified>
+      <Modified>2019-07-15T14:39:40.147</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Users\Ema\Desktop\Ema\Università\Magistrale\I anno\II semestre\Laboratorio ICT\LawrenceVA\VocalAssistant\bin\ARM\Debug\Core\VocalAssistant.exe">
       <PackagePath>VocalAssistant.exe</PackagePath>
-      <Modified>2019-07-09T14:10:02.246</Modified>
+      <Modified>2019-07-15T14:39:40.789</Modified>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>
